@@ -41,4 +41,7 @@ export const FORMATTED_STATUS: Record<string, string> = {
   SUSPENDED: "Suspended",
   LOCKED: "Locked",
   CLOSED: "Closed",
+  VERIFICATION_PENDING: "Verification in progress",
+  VERIFICATION_FAILED: "Verification failed",
+  REQUIRES_MANUAL_REVIEW: "Manual review",
 };

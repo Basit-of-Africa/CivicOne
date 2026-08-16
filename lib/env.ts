@@ -18,6 +18,12 @@ const envSchema = z.object({
     .positive()
     .default(86400),
   PASSWORD_RESET_TTL_SECONDS: z.coerce.number().int().positive().default(3600),
+  IDENTITY_ENCRYPTION_KEY: z
+    .string()
+    .min(32, "IDENTITY_ENCRYPTION_KEY must be at least 32 characters")
+    .default(
+      "civicone-dev-identity-key-change-me-in-production-0123456789abcdef",
+    ),
   RATE_LIMIT_ENABLED: z
     .enum(["true", "false"])
     .default("true")
