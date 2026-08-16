@@ -41,4 +41,15 @@ describe("role-based authorisation", () => {
     expect(() => assertPermission(["USER"], PERMISSIONS.SERVICES_MANAGE)).toThrow();
     expect(() => assertPermission(["SERVICE_ADMIN"], PERMISSIONS.SERVICES_MANAGE)).not.toThrow();
   });
+
+  it("gates identity reads by scope", () => {
+    expect(roleHasPermission("USER", PERMISSIONS.IDENTITY_VERIFY)).toBe(true);
+    expect(roleHasPermission("USER", PERMISSIONS.IDENTITY_READ_MASKED)).toBe(true);
+    expect(roleHasPermission("USER", PERMISSIONS.IDENTITY_READ_FULL)).toBe(false);
+    expect(roleHasPermission("PROFESSIONAL", PERMISSIONS.IDENTITY_READ_MASKED)).toBe(true);
+    expect(roleHasPermission("IDENTITY_ADMIN", PERMISSIONS.IDENTITY_READ_MASKED)).toBe(true);
+    expect(roleHasPermission("IDENTITY_ADMIN", PERMISSIONS.IDENTITY_READ_FULL)).toBe(true);
+    expect(roleHasPermission("SUPER_ADMIN", PERMISSIONS.IDENTITY_READ_FULL)).toBe(true);
+    expect(roleHasPermission("SERVICE_ADMIN", PERMISSIONS.IDENTITY_READ_FULL)).toBe(false);
+  });
 });
