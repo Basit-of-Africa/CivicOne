@@ -174,3 +174,7 @@
 *.lz
 *.lzma
 *.iso
+
+# Next.js / TypeScript build artifacts
+**/.next/
+**/*.tsbuildinfo

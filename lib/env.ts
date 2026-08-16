@@ -1,0 +1,39 @@
+import "server-only";
+import { z } from "zod";
+
+const envSchema = z.object({
+  DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
+  APP_URL: z.string().url().default("http://localhost:3000"),
+  APP_NAME: z.string().default("CivicOne Nigeria"),
+  EMAIL_FROM: z.string().default("no-reply@civicone.ng"),
+  SESSION_COOKIE_NAME: z.string().default("civone_session"),
+  SESSION_COOKIE_SECURE: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((value) => value === "true"),
+  SESSION_MAX_AGE_SECONDS: z.coerce.number().int().positive().default(604800),
+  EMAIL_VERIFICATION_TTL_SECONDS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(86400),
+  PASSWORD_RESET_TTL_SECONDS: z.coerce.number().int().positive().default(3600),
+  RATE_LIMIT_ENABLED: z
+    .enum(["true", "false"])
+    .default("true")
+    .transform((value) => value === "true"),
+  RATE_LIMIT_MAX_ATTEMPTS: z.coerce.number().int().positive().default(5),
+  RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(900000),
+});
+
+const parsed = envSchema.safeParse(process.env);
+
+if (!parsed.success) {
+  console.error(
+    "❌ Invalid environment configuration:",
+    parsed.error.flatten().fieldErrors,
+  );
+  throw new Error("Invalid environment configuration");
+}
+
+export const env = parsed.data;
