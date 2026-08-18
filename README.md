@@ -2,7 +2,7 @@
 
 CivicOne is an independent technology platform that helps Nigerians discover, initiate, manage and organise public and administrative services. It is **not a government agency** and is not affiliated with NIMC, CAC, FRSC, NIS, FIRS or any other government body.
 
-This repository contains **Phase 1**: a production-grade foundation (architecture, database, authentication, roles, design system, app shell) that later phases extend without a rewrite.
+This repository contains **Phase 1 + Phase 2**: a production-grade foundation (architecture, database, authentication, roles, design system, app shell) extended by a mock NIN identity-verification layer. Later phases extend it without a rewrite.
 
 > **Trust disclaimer**: CivicOne is an independent technology platform. It is not a government agency. Government service names used here are for demonstration only.
 
@@ -44,17 +44,23 @@ scripts/                 icon generation
 
 Route groups `(marketing)` and `(app)` affect only file organisation; the `auth/` group is a real URL prefix (`/auth/login`, etc.).
 
-### Data model (Phase 1)
+### Data model
 
 - `users` — opaque prefixed ULID-style IDs (`usr_…`), email/phone unique but never primary keys, bcrypt (cost 12) password hash, status `UNVERIFIED` on registration.
 - `profiles` — personal/contact/security profile, one per user.
 - `roles` / `user_roles` — scoped RBAC: `USER`, `PROFESSIONAL`, `SERVICE_ADMIN`, `CONTENT_ADMIN`, `IDENTITY_ADMIN`, `SUPER_ADMIN`.
 - `sessions` — DB-backed; only a SHA-256 token hash is stored, browser holds an HTTP-only, SameSite=Lax cookie with sliding expiry.
 - `email_verifications` / `password_resets` — single-use, hashed, expiring tokens.
-- `audit_logs` — best-effort audit trail; never stores passwords, tokens or NIN.
-- `identity_profiles` — placeholder for Phase 2 NIN verification (no NIN data stored in Phase 1).
+- `audit_logs` — best-effort audit trail; never stores passwords, tokens or raw NIN.
+- `identity_providers` — registered identity sources (currently the mock `MOCK_NIN` provider).
+- `identity_profiles` — current verification status + government-verified fields (legal name, DOB, gender, nationality, state/LGA).
+- `identity_credentials` — verified credentials (NIN); stores only a **masked value** and an **AES-256-GCM encrypted value**, never the raw NIN in plaintext.
+- `identity_verifications` — successful verification records (provider, reference, date).
+- `identity_verification_attempts` — every attempt (SUCCESS/FAILED/REQUIRES_REVIEW/UNAVAILABLE).
 
-**Not built in Phase 1** (reserved for later phases): real NIN verification, service catalogue/workflows, applications, document wallet, notifications/records, consent sharing, payments, admin consoles, AI.
+**Identity verification (Phase 2)**: uses a **mock provider only**. It NEVER contacts NIMC or any real identity source, and only succeeds for the fictional demo NINs (`00000000001`–`00000000003`) labelled DEMO DATA in the UI. Any other NIN — including a real person's — always fails. Raw NIN access requires the `identity:read:full` permission; the UI only ever shows masked values.
+
+**Not built yet** (reserved for later phases): real NIMC-backed verification, service catalogue/workflows, applications, document wallet, notifications/records, consent sharing, payments, admin consoles, AI.
 
 ## Getting started
 
@@ -118,6 +124,7 @@ npm run build
 | `RATE_LIMIT_ENABLED` | `true` | Toggle rate limiting |
 | `RATE_LIMIT_MAX_ATTEMPTS` | `5` | Max login attempts per window |
 | `RATE_LIMIT_WINDOW_MS` | `900000` | Rate-limit window |
+| `IDENTITY_ENCRYPTION_KEY` | dev-only default | Key used to encrypt NIN values at rest (AES-256-GCM); set a ≥32-char value in prod |
 
 Email delivery is a console stub (`server/email.ts`) so providers can be swapped in a later phase without touching domain logic.
 
@@ -129,6 +136,7 @@ Email delivery is a console stub (`server/email.ts`) so providers can be swapped
 - Changing your password revokes all other sessions; changing your email clears verification.
 - Email verification and password-reset tokens are single-use, stored hashed, with TTLs.
 - Zod validation on every server boundary; structured `AppError` / `ActionResult`; rate limiting abstraction; CSRF same-origin helper; scoped RBAC (no blanket admin access); audit logging.
+- Identity: NIN verification via mock provider (never contacts NIMC), NIN encrypted at rest, masked in the UI, RBAC-gated access, every verification/access audited, rate-limited attempts.
 - Accessibility: semantic HTML, visible focus states, labelled inputs, accessible errors (WCAG 2.2 AA target). Mobile-first layout with a bottom tab bar on small screens.
 
 ## Scripts
@@ -149,7 +157,7 @@ Email delivery is a console stub (`server/email.ts`) so providers can be swapped
 
 ## Testing
 
-Unit tests cover validators, crypto/password, rate limiting, RBAC and id generation. The auth integration test (`tests/auth-flow.test.ts`) exercises the real register → verify → login → logout → reset flow against the `civicone_test` database with `next/headers` mocked. Create it with:
+Unit tests cover validators, crypto/password, encryption, rate limiting, RBAC, id generation and the mock NIN provider. Integration tests exercise the real register → verify → login → logout → reset flow and the identity-verification flow (register → unknown NIN fails → demo NIN verifies → masked NIN displayed) against the `civicone_test` database with `next/headers` mocked. Create it with:
 
 ```bash
 su - postgres -c "psql -c \"CREATE DATABASE civicone_test;\""
