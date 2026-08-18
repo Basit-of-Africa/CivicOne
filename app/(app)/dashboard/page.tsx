@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/server/auth/session";
+import { getIdentityStatus } from "@/modules/identity/service";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ export default async function DashboardPage() {
   const firstName = user.firstName ?? "there";
   const greeting = `${getGreeting()}, ${firstName}`;
   const needsEmailVerification = !!user.email && !user.emailVerifiedAt;
+  const identityStatus = await getIdentityStatus();
 
   return (
     <div className="space-y-6">
@@ -48,7 +50,7 @@ export default async function DashboardPage() {
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Main column */}
         <div className="space-y-4 lg:col-span-2">
-          <IdentityCard />
+          <IdentityCard status={identityStatus} />
 
           <Card>
             <CardHeader>
