@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ShieldCheck } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Card, CardContent } from "@/components/ui/card";
+import { PrivacyExplainer } from "@/modules/identity/components/privacy-explainer";
 
 export const metadata: Metadata = {
   title: "Privacy",
@@ -14,7 +15,7 @@ const SECTIONS = [
   },
   {
     title: "What we don't collect",
-    body: "In this phase we do not collect your NIN or other identity numbers. We never collect more than a service genuinely needs.",
+    body: "We never collect more than a service genuinely needs. Your NIN is only collected when you choose to verify your identity, with your explicit consent.",
   },
   {
     title: "How we use it",
@@ -22,7 +23,7 @@ const SECTIONS = [
   },
   {
     title: "Consent",
-    body: "Nothing is shared with any service provider or government agency without your explicit, informed consent. Sharing controls arrive with identity verification.",
+    body: "Nothing is shared with any service provider or government agency without your explicit, informed consent. Identity verification only runs when you start it, and your NIN is stored encrypted and never displayed in full.",
   },
   {
     title: "Your controls",
@@ -51,6 +52,8 @@ export default function PrivacyPage() {
           </Card>
         ))}
       </div>
+
+      <PrivacyExplainer />
     </div>
   );
 }
