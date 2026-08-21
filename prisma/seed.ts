@@ -1,5 +1,10 @@
 import { PrismaClient, RoleName } from "@prisma/client";
 import { generateId } from "../lib/id";
+import {
+  JURISDICTIONS,
+  SERVICE_CATEGORIES_SEED,
+  SERVICE_PROVIDERS_SEED,
+} from "./service-catalogue-data";
 
 const prisma = new PrismaClient();
 
@@ -99,6 +104,63 @@ async function main() {
 
   const providerCount = await prisma.identityProvider.count();
   console.log(`Done. ${providerCount} identity providers ready.`);
+
+  console.log("Seeding jurisdictions...");
+  for (const j of JURISDICTIONS) {
+    const parent = j.parent
+      ? { connect: { code: j.parent } }
+      : undefined;
+    await prisma.jurisdiction.upsert({
+      where: { code: j.code },
+      update: { name: j.name, level: j.level, ...(parent ? { parentId: undefined } : {}) },
+      create: {
+        id: generateId("jsd"),
+        code: j.code,
+        name: j.name,
+        level: j.level,
+        ...(parent ? { parent: parent as never } : {}),
+      },
+    });
+  }
+  console.log(`Done. ${await prisma.jurisdiction.count()} jurisdictions ready.`);
+
+  console.log("Seeding service categories...");
+  for (const [index, c] of SERVICE_CATEGORIES_SEED.entries()) {
+    await prisma.serviceCategory.upsert({
+      where: { slug: c.slug },
+      update: { name: c.name, description: c.description, sortOrder: index },
+      create: {
+        id: generateId("sc"),
+        slug: c.slug,
+        name: c.name,
+        description: c.description,
+        sortOrder: index,
+      },
+    });
+  }
+  console.log(`Done. ${await prisma.serviceCategory.count()} categories ready.`);
+
+  console.log("Seeding service providers...");
+  for (const p of SERVICE_PROVIDERS_SEED) {
+    await prisma.serviceProvider.upsert({
+      where: { slug: p.slug },
+      update: {
+        name: p.name,
+        abbreviation: p.abbreviation,
+        description: p.description,
+        officialUrl: p.officialUrl,
+      },
+      create: {
+        id: generateId("spv"),
+        slug: p.slug,
+        name: p.name,
+        abbreviation: p.abbreviation,
+        description: p.description,
+        officialUrl: p.officialUrl,
+      },
+    });
+  }
+  console.log(`Done. ${await prisma.serviceProvider.count()} providers ready.`);
 }
 
 main()
