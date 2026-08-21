@@ -17,7 +17,7 @@ const DEMO = {
   nationality: "Nigerian",
   stateOfOrigin: "Anambra",
   lga: "Idemili North",
-};
+} as const;
 
 function generateId(prefix: string): string {
   const raw = randomBytes(10).toString("hex");
