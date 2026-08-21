@@ -41,6 +41,7 @@ model User {
   identityCredentials IdentityCredential[]
   identityVerifications IdentityVerification[]
   identityVerificationAttempts IdentityVerificationAttempt[]
+  savedServices      SavedService[]
 
   @@map("users")
 }
@@ -315,4 +316,177 @@ model IdentityVerificationAttempt {
   @@index([userId])
   @@index([createdAt])
   @@map("identity_verification_attempts")
+}
+
+// ---------------------------------------------------------------------------
+// Service catalogue (Phase 3)
+// ---------------------------------------------------------------------------
+
+enum ServiceMode {
+  GUIDANCE // CivicOne explains the process
+  EXTERNAL // CivicOne prepares the user and sends them to the official provider
+  INTEGRATED // Future authorised API integration (not built yet)
+}
+
+enum JurisdictionLevel {
+  FEDERAL
+  STATE
+  LOCAL
+}
+
+model ServiceCategory {
+  id          String   @id @db.VarChar(64)
+  slug        String   @unique @db.VarChar(80)
+  name        String   @db.VarChar(120)
+  description String?  @db.VarChar(255)
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  services Service[]
+
+  @@map("service_categories")
+}
+
+model ServiceProvider {
+  id           String   @id @db.VarChar(64)
+  slug         String   @unique @db.VarChar(80)
+  name         String   @db.VarChar(160)
+  abbreviation String?  @db.VarChar(40)
+  description  String?  @db.Text
+  officialUrl  String?  @map("official_url") @db.VarChar(512)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  services Service[]
+
+  @@map("service_providers")
+}
+
+model Jurisdiction {
+  id          String            @id @db.VarChar(64)
+  code        String            @unique @db.VarChar(40) // e.g. FEDERAL, LAGOS, LAGOS_ISLAND
+  name        String            @db.VarChar(120)
+  level       JurisdictionLevel
+  parentId    String?           @map("parent_id") @db.VarChar(64)
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  parent   Jurisdiction?  @relation("JurisdictionHierarchy", fields: [parentId], references: [id], onDelete: Restrict)
+  children Jurisdiction[] @relation("JurisdictionHierarchy")
+  services Service[]
+
+  @@index([parentId])
+  @@map("jurisdictions")
+}
+
+model Service {
+  id               String      @id @db.VarChar(64)
+  slug             String      @unique @db.VarChar(120)
+  categoryId       String      @map("category_id") @db.VarChar(64)
+  providerId       String      @map("provider_id") @db.VarChar(64)
+  jurisdictionId   String      @map("jurisdiction_id") @db.VarChar(64)
+  mode             ServiceMode
+  name             String      @db.VarChar(200)
+  summary          String      @db.VarChar(300)
+  description      String      @db.Text
+  eligibility      String?     @db.Text
+  estimatedTime    String?     @map("estimated_time") @db.VarChar(120)
+  officialUrl      String?     @map("official_url") @db.VarChar(512)
+  searchText       String      @default("") @map("search_text") @db.Text
+  isDemo           Boolean     @default(true) @map("is_demo")
+  isActive         Boolean     @default(true) @map("is_active")
+  createdAt        DateTime    @default(now()) @map("created_at")
+  updatedAt        DateTime    @updatedAt @map("updated_at")
+
+  category     ServiceCategory     @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  provider     ServiceProvider     @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  jurisdiction Jurisdiction        @relation(fields: [jurisdictionId], references: [id], onDelete: Restrict)
+  requirements ServiceRequirement[]
+  faqs         ServiceFAQ[]
+  fees         ServiceFee[]
+  relatedFrom  ServiceRelated[]    @relation("ServiceRelatedFrom")
+  relatedTo    ServiceRelated[]    @relation("ServiceRelatedTo")
+  savedBy      SavedService[]
+
+  @@index([categoryId])
+  @@index([providerId])
+  @@index([jurisdictionId])
+  @@index([isActive])
+  @@map("services")
+}
+
+model ServiceRequirement {
+  id          String   @id @db.VarChar(64)
+  serviceId   String   @map("service_id") @db.VarChar(64)
+  title       String   @db.VarChar(200)
+  description String?  @db.Text
+  isDocument  Boolean  @default(false) @map("is_document")
+  isVerified  Boolean  @default(false) @map("is_verified")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([serviceId])
+  @@map("service_requirements")
+}
+
+model ServiceFAQ {
+  id        String   @id @db.VarChar(64)
+  serviceId String   @map("service_id") @db.VarChar(64)
+  question  String   @db.VarChar(300)
+  answer    String   @db.Text
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([serviceId])
+  @@map("service_faqs")
+}
+
+model ServiceFee {
+  id        String   @id @db.VarChar(64)
+  serviceId String   @map("service_id") @db.VarChar(64)
+  name      String   @db.VarChar(200)
+  amount    Decimal? @db.Decimal(14, 2)
+  currency  String   @default("NGN") @db.VarChar(3)
+  frequency String?  @db.VarChar(40) // one-off, annual, per-application...
+  note      String?  @db.VarChar(255)
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([serviceId])
+  @@map("service_fees")
+}
+
+model ServiceRelated {
+  id             String   @id @db.VarChar(64)
+  serviceId      String   @map("service_id") @db.VarChar(64)
+  relatedId      String   @map("related_id") @db.VarChar(64)
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  service  Service @relation("ServiceRelatedFrom", fields: [serviceId], references: [id], onDelete: Cascade)
+  related  Service @relation("ServiceRelatedTo", fields: [relatedId], references: [id], onDelete: Cascade)
+
+  @@unique([serviceId, relatedId])
+  @@index([relatedId])
+  @@map("service_related")
+}
+
+model SavedService {
+  id        String   @id @db.VarChar(64)
+  userId    String   @map("user_id") @db.VarChar(64)
+  serviceId String   @map("service_id") @db.VarChar(64)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, serviceId])
+  @@index([serviceId])
+  @@map("saved_services")
 }
