@@ -4,6 +4,7 @@ import {
   JURISDICTIONS,
   SERVICE_CATEGORIES_SEED,
   SERVICE_PROVIDERS_SEED,
+  DEMO_SERVICES_SEED,
 } from "./service-catalogue-data";
 
 const prisma = new PrismaClient();
@@ -161,6 +162,123 @@ async function main() {
     });
   }
   console.log(`Done. ${await prisma.serviceProvider.count()} providers ready.`);
+
+  console.log("Seeding demo services...");
+  for (const s of DEMO_SERVICES_SEED) {
+    const category = await prisma.serviceCategory.findUnique({ where: { slug: s.category } });
+    const provider = await prisma.serviceProvider.findUnique({ where: { slug: s.provider } });
+    const jurisdiction = await prisma.jurisdiction.findUnique({ where: { code: s.jurisdiction } });
+    if (!category || !provider || !jurisdiction) {
+      throw new Error(`Seed error: service ${s.slug} references missing ${s.category}/${s.provider}/${s.jurisdiction}`);
+    }
+    const searchText = [
+      s.name,
+      s.summary,
+      s.description,
+      category.name,
+      provider.name,
+      provider.abbreviation ?? "",
+      s.eligibility,
+    ].join(" ");
+
+    const service = await prisma.service.upsert({
+      where: { slug: s.slug },
+      update: {
+        categoryId: category.id,
+        providerId: provider.id,
+        jurisdictionId: jurisdiction.id,
+        mode: s.mode,
+        name: s.name,
+        summary: s.summary,
+        description: s.description,
+        eligibility: s.eligibility,
+        estimatedTime: s.estimatedTime ?? null,
+        officialUrl: s.officialUrl,
+        searchText,
+        isDemo: true,
+        isActive: true,
+      },
+      create: {
+        id: generateId("srv"),
+        slug: s.slug,
+        categoryId: category.id,
+        providerId: provider.id,
+        jurisdictionId: jurisdiction.id,
+        mode: s.mode,
+        name: s.name,
+        summary: s.summary,
+        description: s.description,
+        eligibility: s.eligibility,
+        estimatedTime: s.estimatedTime ?? null,
+        officialUrl: s.officialUrl,
+        searchText,
+        isDemo: true,
+        isActive: true,
+      },
+    });
+
+    // Requirements
+    await prisma.serviceRequirement.deleteMany({ where: { serviceId: service.id } });
+    for (const [index, r] of s.requirements.entries()) {
+      await prisma.serviceRequirement.create({
+        data: {
+          id: generateId("srq"),
+          serviceId: service.id,
+          title: r.title,
+          description: r.description ?? null,
+          isDocument: r.isDocument ?? false,
+          isVerified: r.isVerified ?? false,
+          sortOrder: index,
+        },
+      });
+    }
+
+    // Fees
+    await prisma.serviceFee.deleteMany({ where: { serviceId: service.id } });
+    for (const [index, f] of s.fees.entries()) {
+      await prisma.serviceFee.create({
+        data: {
+          id: generateId("sfee"),
+          serviceId: service.id,
+          name: f.name,
+          amount: null,
+          frequency: f.frequency ?? null,
+          note: f.note ?? null,
+          sortOrder: index,
+        },
+      });
+    }
+
+    // FAQs
+    await prisma.serviceFAQ.deleteMany({ where: { serviceId: service.id } });
+    for (const [index, faq] of s.faqs.entries()) {
+      await prisma.serviceFAQ.create({
+        data: {
+          id: generateId("sfq"),
+          serviceId: service.id,
+          question: faq.question,
+          answer: faq.answer,
+          sortOrder: index,
+        },
+      });
+    }
+  }
+
+  // Related services (second pass, after all services exist)
+  for (const s of DEMO_SERVICES_SEED) {
+    const service = await prisma.service.findUnique({ where: { slug: s.slug } });
+    if (!service) continue;
+    await prisma.serviceRelated.deleteMany({ where: { serviceId: service.id } });
+    for (const relatedSlug of s.related) {
+      const related = await prisma.service.findUnique({ where: { slug: relatedSlug } });
+      if (related) {
+        await prisma.serviceRelated.create({
+          data: { id: generateId("srl"), serviceId: service.id, relatedId: related.id },
+        });
+      }
+    }
+  }
+  console.log(`Done. ${await prisma.service.count()} demo services ready.`);
 }
 
 main()
