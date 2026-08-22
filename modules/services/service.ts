@@ -1,8 +1,14 @@
 import "server-only";
 import { Prisma, type ServiceMode } from "@prisma/client";
 import { db } from "@/server/db";
-import { AppError } from "@/server/errors";
+import { AppError, toFieldErrors, validationError } from "@/server/errors";
 import { expandQuery, matchIntent } from "./search-synonyms";
+import { requireUser } from "@/server/auth/session";
+import { assertPermission, PERMISSIONS } from "@/server/rbac";
+import { logAudit } from "@/server/audit";
+import { getRequestContext } from "@/server/request";
+import { generateId } from "@/lib/id";
+import { serviceIdSchema } from "./validators";
 
 export interface ServiceCardView {
   id: string;
@@ -214,4 +220,75 @@ export async function getRelatedBySlugs(slugs: string[]): Promise<ServiceCardVie
 export function getServiceSearchTermsForSlug(slug: string): string[] {
   const query = slug.replace(/-/g, " ");
   return query.split(" ").filter(Boolean);
+}
+
+export async function saveService(serviceId: string): Promise<{ saved: boolean }> {
+  const user = await requireUser();
+  assertPermission(user.roleNames, PERMISSIONS.SERVICES_SAVE);
+
+  const parsed = serviceIdSchema.safeParse({ serviceId });
+  if (!parsed.success) {
+    throw validationError(toFieldErrors(parsed.error));
+  }
+
+  const service = await db.service.findUnique({ where: { id: serviceId } });
+  if (!service || !service.isActive) {
+    throw new AppError("Service not found.", { code: "NOT_FOUND" });
+  }
+
+  const ctx = await getRequestContext();
+  await db.savedService.upsert({
+    where: { userId_serviceId: { userId: user.id, serviceId } },
+    create: { id: generateId("svs"), userId: user.id, serviceId },
+    update: {},
+  });
+
+  await logAudit({
+    actorId: user.id,
+    action: "services.saved",
+    resourceType: "service",
+    resourceId: serviceId,
+    ipAddress: ctx.ipAddress,
+    userAgent: ctx.userAgent,
+  });
+
+  return { saved: true };
+}
+
+export async function unsaveService(serviceId: string): Promise<{ saved: false }> {
+  const user = await requireUser();
+  assertPermission(user.roleNames, PERMISSIONS.SERVICES_SAVE);
+
+  const ctx = await getRequestContext();
+  await db.savedService.deleteMany({ where: { userId: user.id, serviceId } });
+
+  await logAudit({
+    actorId: user.id,
+    action: "services.unsaved",
+    resourceType: "service",
+    resourceId: serviceId,
+    ipAddress: ctx.ipAddress,
+    userAgent: ctx.userAgent,
+  });
+
+  return { saved: false };
+}
+
+export async function getSavedServiceIds(): Promise<Set<string>> {
+  const user = await requireUser();
+  const rows = await db.savedService.findMany({
+    where: { userId: user.id },
+    select: { serviceId: true },
+  });
+  return new Set(rows.map((r) => r.serviceId));
+}
+
+export async function getSavedServices(): Promise<ServiceCardView[]> {
+  const user = await requireUser();
+  const rows = await db.savedService.findMany({
+    where: { userId: user.id },
+    select: { service: { select: cardSelect } },
+    orderBy: { createdAt: "desc" },
+  });
+  return rows.map((r) => toCard(r.service));
 }

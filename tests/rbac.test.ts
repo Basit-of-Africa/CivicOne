@@ -52,4 +52,12 @@ describe("role-based authorisation", () => {
     expect(roleHasPermission("SUPER_ADMIN", PERMISSIONS.IDENTITY_READ_FULL)).toBe(true);
     expect(roleHasPermission("SERVICE_ADMIN", PERMISSIONS.IDENTITY_READ_FULL)).toBe(false);
   });
+
+  it("grants services:save to USER, PROFESSIONAL, SERVICE_ADMIN and CONTENT_ADMIN", () => {
+    expect(hasPermission(["USER"], PERMISSIONS.SERVICES_SAVE)).toBe(true);
+    expect(hasPermission(["PROFESSIONAL"], PERMISSIONS.SERVICES_SAVE)).toBe(true);
+    expect(hasPermission(["SERVICE_ADMIN"], PERMISSIONS.SERVICES_SAVE)).toBe(true);
+    expect(hasPermission(["CONTENT_ADMIN"], PERMISSIONS.SERVICES_SAVE)).toBe(true);
+    expect(hasPermission(["IDENTITY_ADMIN"], PERMISSIONS.SERVICES_SAVE)).toBe(false);
+  });
 });
