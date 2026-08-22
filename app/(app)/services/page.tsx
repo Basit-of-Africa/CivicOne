@@ -1,22 +1,23 @@
 import type { Metadata } from "next";
-import { Files } from "lucide-react";
-import { SectionPlaceholder } from "@/components/app/section-placeholder";
+import { PageHeader } from "@/components/ui/page-header";
+import { getSavedServices } from "@/modules/services/service";
+import { SavedServicesList } from "@/modules/services/components/saved-services-list";
 
 export const metadata: Metadata = {
   title: "My Services",
 };
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const saved = await getSavedServices();
+
   return (
-    <SectionPlaceholder
-      title="My Services"
-      description="The public services you've discovered, saved or subscribed to."
-      icon={Files}
-      placeholderTitle="You don't have any services yet."
-      placeholderDescription="Once the service catalogue arrives, services you save or subscribe to will appear here."
-      ctaLabel="Explore services"
-      ctaHref="/find-a-service"
-      phase="Service catalogue arrives in Phase 2"
-    />
+    <div className="space-y-6">
+      <PageHeader
+        title="My Services"
+        description="Public services you've saved for later."
+        breadcrumbs={[{ label: "My Services" }]}
+      />
+      <SavedServicesList services={saved} />
+    </div>
   );
 }
