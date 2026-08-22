@@ -11,7 +11,6 @@ vi.mock("next/headers", () => ({
 
 import { db } from "@/server/db";
 import { searchServices, getServiceBySlug, getServiceCategories } from "@/modules/services/service";
-import { expandQuery } from "@/modules/services/search-synonyms";
 
 beforeAll(async () => {
   cookieJar.clear();
