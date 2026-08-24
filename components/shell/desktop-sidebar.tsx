@@ -23,11 +23,14 @@ import {
 import { cn } from "@/lib/utils";
 import { PRIMARY_NAV, SECONDARY_NAV, isNavItemActive } from "@/lib/navigation";
 import { logoutAction } from "@/modules/auth/actions";
+import { IdentityStatusIndicator } from "@/components/shell/identity-status-indicator";
+import type { IdentityStatusView } from "@/modules/identity/service";
 
 export interface DesktopSidebarProps {
   firstName: string | null;
   lastName: string | null;
   email: string | null;
+  identityStatus: IdentityStatusView;
 }
 
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
@@ -184,7 +187,8 @@ export function DesktopSidebar(props: DesktopSidebarProps) {
         <Logo href="/dashboard" />
       </div>
       <NavList />
-      <div className="border-t border-border p-3">
+      <div className="space-y-2 border-t border-border p-3">
+        <IdentityStatusIndicator status={props.identityStatus} />
         <UserMenu {...props} />
       </div>
     </aside>

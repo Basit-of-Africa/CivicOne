@@ -22,19 +22,22 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { NavList } from "@/components/shell/desktop-sidebar";
+import { IdentityStatusIndicator } from "@/components/shell/identity-status-indicator";
 import { logoutAction } from "@/modules/auth/actions";
+import type { IdentityStatusView } from "@/modules/identity/service";
 
 export interface MobileHeaderProps {
   firstName: string | null;
   lastName: string | null;
   email: string | null;
+  identityStatus: IdentityStatusView;
 }
 
 /**
  * Mobile top bar: logo, navigation drawer trigger and account menu.
  * Visible below lg breakpoint only.
  */
-export function MobileHeader({ firstName, lastName, email }: MobileHeaderProps) {
+export function MobileHeader({ firstName, lastName, email, identityStatus }: MobileHeaderProps) {
   const router = useRouter();
   const [pending, setPending] = React.useState(false);
   const [navOpen, setNavOpen] = React.useState(false);
@@ -73,6 +76,9 @@ export function MobileHeader({ firstName, lastName, email }: MobileHeaderProps) 
             </DrawerHeader>
             <div className="flex-1 overflow-y-auto py-4">
               <NavList onNavigate={() => setNavOpen(false)} />
+              <div className="px-3 pb-2">
+                <IdentityStatusIndicator status={identityStatus} />
+              </div>
             </div>
           </DrawerContent>
         </Drawer>

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/server/auth/session";
+import { getIdentityStatus } from "@/modules/identity/service";
 import { DesktopSidebar } from "@/components/shell/desktop-sidebar";
 import { MobileHeader } from "@/components/shell/mobile-header";
 import { MobileNavigation } from "@/components/shell/mobile-navigation";
@@ -16,17 +17,21 @@ export default async function AppLayout({
     redirect("/auth/login");
   }
 
+  const identityStatus = await getIdentityStatus();
+
   return (
     <div className="min-h-svh bg-background">
       <DesktopSidebar
         firstName={user.firstName}
         lastName={user.lastName}
         email={user.email}
+        identityStatus={identityStatus}
       />
       <MobileHeader
         firstName={user.firstName}
         lastName={user.lastName}
         email={user.email}
+        identityStatus={identityStatus}
       />
       <main id="main-content" className="lg:pl-64">
         <div className="mx-auto w-full max-w-6xl px-4 pb-28 pt-6 sm:px-6 lg:pb-12 lg:pt-8">
