@@ -2,7 +2,7 @@
 
 CivicOne is an independent technology platform that helps Nigerians discover, initiate, manage and organise public and administrative services. It is **not a government agency** and is not affiliated with NIMC, CAC, FRSC, NIS, FIRS or any other government body.
 
-This repository contains **Phase 1 + Phase 2**: a production-grade foundation (architecture, database, authentication, roles, design system, app shell) extended by a mock NIN identity-verification layer. Later phases extend it without a rewrite.
+This repository contains **Phase 1 + Phase 2**: a production-grade foundation (architecture, database, authentication, roles, design system, app shell) extended by a mock NIN identity-verification layer and a **live service catalogue** (search, categories, detail pages, saved services). Later phases extend it without a rewrite.
 
 > **Trust disclaimer**: CivicOne is an independent technology platform. It is not a government agency. Government service names used here are for demonstration only.
 
@@ -57,10 +57,15 @@ Route groups `(marketing)` and `(app)` affect only file organisation; the `auth/
 - `identity_credentials` — verified credentials (NIN); stores only a **masked value** and an **AES-256-GCM encrypted value**, never the raw NIN in plaintext.
 - `identity_verifications` — successful verification records (provider, reference, date).
 - `identity_verification_attempts` — every attempt (SUCCESS/FAILED/REQUIRES_REVIEW/UNAVAILABLE).
+- `jurisdictions` / `service_categories` / `service_providers` — reference data for the service catalogue.
+- `services` — catalogue entries (title, summary, requirements, fees, steps, documents, eligibility, turnaround); `services_search_alias` + `services_search_intent` power the synonym-aware search.
+- `saved_services` — per-user bookmarks of catalogue services.
 
 **Identity verification (Phase 2)**: uses a **mock provider only**. It NEVER contacts NIMC or any real identity source, and only succeeds for the fictional demo NINs (`00000000001`–`00000000003`) labelled DEMO DATA in the UI. Any other NIN — including a real person's — always fails. Raw NIN access requires the `identity:read:full` permission; the UI only ever shows masked values.
 
-**Not built yet** (reserved for later phases): real NIMC-backed verification, service catalogue/workflows, applications, document wallet, notifications/records, consent sharing, payments, admin consoles, AI.
+**Service catalogue (Phase 2)**: a fully searchable, browsable directory of 22 demo public services across 13 categories (identity, business, tax, immigration, transport, education, health, property, employment, agriculture, licences, family/social, legal). Search understands natural phrasing and common Nigerian synonyms (e.g. "driving licence", "business registration", "travelling abroad"). Signed-in users can save services; saving requires the `services:save` permission.
+
+**Not built yet** (reserved for later phases): real NIMC-backed verification, service applications/workflows, document wallet, notifications/records, consent sharing, payments, admin consoles, AI.
 
 ## Getting started
 
@@ -90,7 +95,7 @@ Required: `DATABASE_URL`. All other variables have safe defaults for local devel
 ```bash
 # create the database (example for a local Postgres instance)
 npm run db:migrate        # apply migrations
-npm run db:seed           # seed the six roles (idempotent)
+npm run db:seed           # seed roles + reference data + demo services (idempotent)
 ```
 
 ### 4. Run
@@ -137,6 +142,7 @@ Email delivery is a console stub (`server/email.ts`) so providers can be swapped
 - Email verification and password-reset tokens are single-use, stored hashed, with TTLs.
 - Zod validation on every server boundary; structured `AppError` / `ActionResult`; rate limiting abstraction; CSRF same-origin helper; scoped RBAC (no blanket admin access); audit logging.
 - Identity: NIN verification via mock provider (never contacts NIMC), NIN encrypted at rest, masked in the UI, RBAC-gated access, every verification/access audited, rate-limited attempts.
+- Services: RBAC-gated saving (`services:save`), Zod-validated server actions, synonym-aware search with rate limiting.
 - Accessibility: semantic HTML, visible focus states, labelled inputs, accessible errors (WCAG 2.2 AA target). Mobile-first layout with a bottom tab bar on small screens.
 
 ## Scripts
@@ -157,7 +163,7 @@ Email delivery is a console stub (`server/email.ts`) so providers can be swapped
 
 ## Testing
 
-Unit tests cover validators, crypto/password, encryption, rate limiting, RBAC, id generation and the mock NIN provider. Integration tests exercise the real register → verify → login → logout → reset flow and the identity-verification flow (register → unknown NIN fails → demo NIN verifies → masked NIN displayed) against the `civicone_test` database with `next/headers` mocked. Create it with:
+Unit tests cover validators, crypto/password, encryption, rate limiting, RBAC, id generation, the mock NIN provider, search synonyms/intents, and the service-search query logic. Integration tests exercise the real register → verify → login → logout → reset flow, the identity-verification flow (register → unknown NIN fails → demo NIN verifies → masked NIN displayed) and the service-catalogue flow (search returns expected results, save/unsave round-trips) against the `civicone_test` database with `next/headers` mocked. Create it with:
 
 ```bash
 su - postgres -c "psql -c \"CREATE DATABASE civicone_test;\""
@@ -167,7 +173,7 @@ DATABASE_URL="postgresql://postgres:postgres@localhost:5432/civicone_test" npx p
 
 ## Deployment
 
-- Build with `npm run build`; run `npm run db:deploy` and `npm run db:seed` on the target database.
+- Build with `npm run build`; run `npm run db:deploy` and `npm run db:seed` on the target database (the seed is idempotent — re-running it upserts reference data and demo services).
 - Set `SESSION_COOKIE_SECURE=true` and a real `APP_URL` in production.
 - Wire `server/email.ts` to a real provider.
 - Run behind TLS; the app sets no server-identifying headers (`poweredByHeader: false`).

@@ -18,19 +18,23 @@ import { Badge } from "@/components/ui/badge";
 import { HeroSearch } from "@/components/marketing/hero-search";
 import { SERVICE_CATEGORIES, TRUST_DISCLAIMER } from "@/lib/constants";
 
-const FEATURES = [
+const FEATURES: Array<{
+  icon: typeof Fingerprint;
+  title: string;
+  description: string;
+  status?: string;
+}> = [
   {
     icon: Fingerprint,
     title: "Identity, under your control",
     description:
       "A single secure CivicOne account. Verify your identity when you're ready and reuse it across services.",
-    status: "Identity verification arrives in Phase 2",
   },
   {
     icon: Landmark,
     title: "Discover public services",
     description:
-      "Find government and administrative services, understand what's needed and how much they cost — before you start.",
+      "Search the live catalogue of public and administrative services. See what's needed and what it costs — before you start.",
   },
   {
     icon: FileCheck2,
@@ -215,8 +219,8 @@ export default function HomePage() {
                 What would you like to do?
               </h2>
               <p className="mt-2 max-w-xl text-muted-foreground">
-                Browse by category. Detailed service information lands in Phase 2 —
-                the architecture is already in place.
+                Browse the live catalogue by category. Search, compare and save
+                services so the right next step is never more than a tap away.
               </p>
             </div>
             <Button variant="outline" asChild className="shrink-0">
@@ -306,9 +310,9 @@ export default function HomePage() {
               Get organised, in your own time
             </h2>
             <p className="mt-3 text-primary-foreground/80">
-              Create your account today. Identity verification, services and
-              records arrive in the phases ahead — and the foundation you sign
-              up on stays with you.
+              Create your account today. Identity verification, the service
+              catalogue and saved services are live now — and more is on the
+              way.
             </p>
             <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button size="lg" variant="accent" asChild>
