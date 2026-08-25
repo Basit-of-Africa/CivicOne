@@ -181,6 +181,7 @@ export interface DemoServiceSeed {
   fees: FeeSeed[];
   faqs: Array<{ question: string; answer: string }>;
   related: string[];
+  steps?: Array<{ title: string; description: string }>;
 }
 
 const UNVERIFIED_NOTE = "Demo information. Confirm current requirements with the official provider.";
@@ -214,6 +215,13 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { question: "Do I need a NIN to register a company?", answer: "CAC now requires identification for directors and shareholders. Confirm the current identification requirements with the CAC portal." },
     ],
     related: ["tin-registration", "business-name-registration", "cac-annual-returns"],
+    steps: [
+      { title: "Reserve your company name", description: "Check name availability and reserve your preferred names on the CAC portal." },
+      { title: "Prepare incorporation documents", description: "Draft the Memorandum and Articles of Association, often with the help of a lawyer or CAC-accredited agent." },
+      { title: "Enter company details", description: "Provide directors' and shareholders' information, share structure and registered address." },
+      { title: "Upload documents and pay", description: "Attach the required documents and pay the filing fees on the portal." },
+      { title: "Submit and track", description: "Submit the application and monitor its status until the certificate is issued." },
+    ],
   },
   {
     slug: "business-name-registration",
@@ -237,6 +245,12 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { question: "Is a business name the same as a company?", answer: "No. A business name is for sole traders and partnerships; a company is a separate legal entity. Both are registered with CAC." },
     ],
     related: ["business-registration", "tin-registration"],
+    steps: [
+      { title: "Log in to the CAC portal", description: "Sign in or create an account on the CAC online portal." },
+      { title: "Check name availability", description: "Search for your proposed business name and reserve it if it is available." },
+      { title: "Enter business details", description: "Provide the business address, nature of business and proprietor or partner details." },
+      { title: "Pay and submit", description: "Pay the registration fee and submit the application for processing." },
+    ],
   },
   {
     slug: "tin-registration",
@@ -259,6 +273,12 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { question: "Why do I need a TIN?", answer: "A TIN is used to file tax returns and is often requested by banks and government bodies." },
     ],
     related: ["business-registration"],
+    steps: [
+      { title: "Create an e-FIRS account", description: "Sign up on the FIRS e-FIRS portal." },
+      { title: "Choose TIN registration", description: "Select the individual or business TIN registration option." },
+      { title: "Provide identification", description: "Enter your identification details, such as your NIN." },
+      { title: "Receive your TIN", description: "Your TIN is issued immediately after successful submission." },
+    ],
   },
   {
     slug: "nin-enrollment",
@@ -284,6 +304,13 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { question: "Do I need to pay for a NIN?", answer: "First-time enrolment is free at NIMC centres. Any token fees charged by third-party centres should be confirmed with NIMC." },
     ],
     related: ["national-passport", "driver-licence"],
+    steps: [
+      { title: "Book an appointment", description: "Schedule an enrolment slot at an approved NIMC enrolment centre." },
+      { title: "Bring your documents", description: "Carry your birth certificate or declaration of age and proof of address." },
+      { title: "Complete the form", description: "Fill in the enrolment form at the centre." },
+      { title: "Capture biometrics", description: "Your facial image and fingerprints are captured." },
+      { title: "Receive your NIN slip", description: "Your NIN is issued on enrolment; the card may take longer to arrive." },
+    ],
   },
   {
     slug: "national-passport",
@@ -312,6 +339,14 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { question: "Can I renew online?", answer: "Yes — renewals are handled on the same passport portal. See the renewal service." },
     ],
     related: ["international-passport-renewal", "nin-enrollment", "police-character-certificate"],
+    steps: [
+      { title: "Create a passport account", description: "Register on the Nigeria Immigration Service passport portal." },
+      { title: "Complete the application form", description: "Fill in the online application and select your preferred passport office." },
+      { title: "Pay the application fee", description: "Pay online and keep the payment receipt." },
+      { title: "Book an appointment", description: "Choose a date to attend your passport office." },
+      { title: "Attend the interview", description: "Present your documents and complete biometric capture at the office." },
+      { title: "Collect your passport", description: "Return to collect your passport when the tracking status shows it is ready." },
+    ],
   },
   {
     slug: "international-passport-renewal",
@@ -335,6 +370,13 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { question: "Can I renew before my passport expires?", answer: "You can usually renew while your current passport is still valid. Check the portal for the current window." },
     ],
     related: ["national-passport"],
+    steps: [
+      { title: "Log in to the passport portal", description: "Sign in with your existing passport account." },
+      { title: "Start a renewal", description: "Open a renewal application and verify your personal details." },
+      { title: "Pay the renewal fee", description: "Pay online and save your receipt." },
+      { title: "Book an appointment", description: "Schedule a visit to the passport office." },
+      { title: "Attend and collect", description: "Complete capture at the office and collect the renewed passport when ready." },
+    ],
   },
   {
     slug: "driver-licence",
@@ -359,6 +401,13 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { question: "How long is a Nigerian driver's licence valid?", answer: "Licences are typically issued with a validity period of several years; check your licence for the expiry date." },
     ],
     related: ["vehicle-registration", "road-worthiness-certificate", "nin-enrollment"],
+    steps: [
+      { title: "Complete the online application", description: "Fill in the licence application form on the FRSC portal." },
+      { title: "Book biometric capture", description: "Schedule a capture appointment at an FRSC office or approved centre." },
+      { title: "Pay the licence fee", description: "Pay online and keep the receipt." },
+      { title: "Attend capture", description: "Complete your biometrics; new drivers also sit the required test." },
+      { title: "Collect your licence", description: "The licence is produced within a few weeks and delivered to your chosen collection point." },
+    ],
   },
   {
     slug: "vehicle-registration",
@@ -386,6 +435,13 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { question: "Do I need insurance to register a vehicle?", answer: "Yes — a valid comprehensive insurance certificate is required for registration." },
     ],
     related: ["road-worthiness-certificate", "driver-licence"],
+    steps: [
+      { title: "Prepare vehicle documents", description: "Gather proof of purchase or import papers, identity and insurance." },
+      { title: "Visit the FRSC office", description: "Go to an FRSC office or approved centre for the process." },
+      { title: "Complete the registration form", description: "Submit the form with your vehicle details." },
+      { title: "Pay the fees", description: "Pay the registration, number plate and licensing fees." },
+      { title: "Collect your documents", description: "Receive the registration certificate and number plates." },
+    ],
   },
   {
     slug: "certificate-of-occupancy",
@@ -410,6 +466,13 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { question: "Is a Certificate of Occupancy the same as ownership?", answer: "A C of O is a title document that formalises your interest in land. Requirements and fees differ by state." },
     ],
     related: ["building-permit"],
+    steps: [
+      { title: "Gather your land documents", description: "Collect your sale agreement, deed and survey plan." },
+      { title: "Verify the land", description: "Confirm the survey and land details with the land office." },
+      { title: "Submit the application", description: "File your application with the relevant state land office." },
+      { title: "Pay processing fees", description: "Pay the application and processing fees." },
+      { title: "Await issuance", description: "The Certificate of Occupancy is issued once processing completes." },
+    ],
   },
   {
     slug: "building-permit",
@@ -434,6 +497,13 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { question: "Can I start building before the permit is issued?", answer: "Building without an approved permit can lead to enforcement action. Confirm the rules with the Lagos State authorities." },
     ],
     related: ["certificate-of-occupancy"],
+    steps: [
+      { title: "Prepare your title documents", description: "Gather proof of ownership or title to the land." },
+      { title: "Get plans approved", description: "Have building plans and structural drawings prepared by registered professionals." },
+      { title: "Submit to the planning authority", description: "Lodge the plans with the state Ministry of Physical Planning." },
+      { title: "Pay the permit fee", description: "Pay the permit processing fee for your project." },
+      { title: "Collect the permit", description: "Receive the approved building permit once the review is complete." },
+    ],
   },
   {
     slug: "marriage-registration",
@@ -458,6 +528,12 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { question: "Where do I register my marriage?", answer: "Marriage registration is done at NPC marriage registries. Requirements may vary by registry." },
     ],
     related: ["birth-certificate"],
+    steps: [
+      { title: "Complete the registration form", description: "Fill in the marriage registration form with both spouses' details." },
+      { title: "Gather identity documents", description: "Collect identification, passport photographs and declarations of age for both spouses." },
+      { title: "Visit the registry", description: "Attend an NPC marriage registry to complete the process." },
+      { title: "Receive the certificate", description: "The marriage certificate is issued on the day of registration." },
+    ],
   },
   {
     slug: "birth-certificate",
@@ -481,6 +557,12 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { question: "Can I register a birth late?", answer: "Yes — the NPC handles late registration, though additional documentation may be required." },
     ],
     related: ["nin-enrollment"],
+    steps: [
+      { title: "Obtain a birth notification", description: "Get the hospital or midwife birth notification where available." },
+      { title: "Complete the registration form", description: "Fill in the birth registration form with the child's and parents' details." },
+      { title: "Provide parents' identification", description: "Submit identification of the parents or guardians." },
+      { title: "Receive the certificate", description: "The birth certificate is issued once registration is complete." },
+    ],
   },
   {
     slug: "nafdac-product-registration",
@@ -505,6 +587,13 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { question: "Which products need NAFDAC registration?", answer: "Food, drugs, cosmetics, medical devices and similar regulated products generally require registration. Confirm your product category with NAFDAC." },
     ],
     related: ["pharmacy-premises-licence"],
+    steps: [
+      { title: "Prepare the product dossier", description: "Compile the product information, formulation and labelling details." },
+      { title: "Confirm company registration", description: "Ensure your company is registered and recognised by NAFDAC." },
+      { title: "Submit the application", description: "File the dossier through the NAFDAC e-portal." },
+      { title: "Provide samples", description: "Submit product samples for laboratory testing." },
+      { title: "Pay and receive registration", description: "Pay the registration fee and receive your product registration number." },
+    ],
   },
   {
     slug: "pharmacy-premises-licence",
@@ -528,6 +617,13 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { question: "Who needs a PCN premises licence?", answer: "Pharmacies, patent medicine stores and similar premises need PCN licences to operate legally." },
     ],
     related: ["nafdac-product-registration"],
+    steps: [
+      { title: "Confirm premises standards", description: "Make sure the premises meets PCN requirements for pharmacy operation." },
+      { title: "Prepare premises details", description: "Gather address, layout and professional registration documents." },
+      { title: "Submit the application", description: "Apply through the Pharmacists Council of Nigeria." },
+      { title: "Pay the licensing fee", description: "Pay the applicable premises licensing fee." },
+      { title: "Pass the inspection", description: "An inspection of the premises is carried out before the licence is issued." },
+    ],
   },
   {
     slug: "jamb-utme-registration",
@@ -552,6 +648,13 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { question: "When does UTME registration open?", answer: "Registration dates are announced by JAMB each year. Check the JAMB portal for the current calendar." },
     ],
     related: ["nysc-registration"],
+    steps: [
+      { title: "Create a JAMB profile", description: "Register on the JAMB portal with a valid email address." },
+      { title: "Complete the UTME form", description: "Fill in the registration form with your personal and educational details." },
+      { title: "Pay the registration fee", description: "Pay the UTME registration fee at an approved bank or channel." },
+      { title: "Get your examination slip", description: "Print your examination slip showing your CBT centre and date." },
+      { title: "Sit the examination", description: "Attend your accredited CBT centre on the scheduled date." },
+    ],
   },
   {
     slug: "nysc-registration",
@@ -576,6 +679,13 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { question: "Who is exempt from NYSC?", answer: "Exemptions apply in specific circumstances. Confirm eligibility with NYSC." },
     ],
     related: ["jamb-utme-registration"],
+    steps: [
+      { title: "Check your eligibility", description: "Confirm you meet NYSC eligibility requirements for mobilisation." },
+      { title: "Complete the online registration", description: "Fill in the NYSC registration form on the portal." },
+      { title: "Upload your documents", description: "Attach your statement of result and identification." },
+      { title: "Wait for the call-up letter", description: "Your call-up letter is issued according to the NYSC schedule." },
+      { title: "Report to camp", description: "Report to the orientation camp on the date in your call-up letter." },
+    ],
   },
   {
     slug: "pension-registration",
@@ -599,6 +709,12 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { question: "What is an RSA?", answer: "A Retirement Savings Account is a personal pension account opened with a licensed Pension Fund Administrator." },
     ],
     related: [],
+    steps: [
+      { title: "Confirm employer registration", description: "Check that your employer is registered with a licensed Pension Fund Administrator (PFA)." },
+      { title: "Complete the RSA form", description: "Fill in the Retirement Savings Account application form." },
+      { title: "Provide your details", description: "Submit identification and a passport photograph." },
+      { title: "Receive your RSA details", description: "Your RSA number and details are issued once the account is opened." },
+    ],
   },
   {
     slug: "cac-annual-returns",
@@ -621,6 +737,13 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { question: "What happens if I don't file annual returns?", answer: "Failure to file can lead to penalties and, in severe cases, striking the company off the register." },
     ],
     related: ["business-registration"],
+    steps: [
+      { title: "Prepare financial information", description: "Gather your company's details and any required financial statements." },
+      { title: "Log in to the CAC portal", description: "Sign in to the CAC online portal with your company account." },
+      { title: "File the annual returns", description: "Complete the annual returns form with the required information." },
+      { title: "Pay the filing fee", description: "Pay the annual returns filing fee." },
+      { title: "Keep your receipt", description: "Save the filing receipt as proof of compliance." },
+    ],
   },
   {
     slug: "road-worthiness-certificate",
@@ -644,6 +767,12 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { question: "How often do I need a roadworthiness certificate?", answer: "The certificate has a validity period; renew before it expires. Confirm the current period with the VIO." },
     ],
     related: ["vehicle-registration"],
+    steps: [
+      { title: "Book a vehicle inspection", description: "Schedule an inspection with the Vehicle Inspection Service." },
+      { title: "Bring the vehicle and documents", description: "Take your vehicle, registration papers and insurance certificate to the inspection." },
+      { title: "Pass the inspection", description: "The vehicle is checked for roadworthiness." },
+      { title: "Pay and collect", description: "Pay the test fee and collect your roadworthiness certificate." },
+    ],
   },
   {
     slug: "police-character-certificate",
@@ -667,6 +796,13 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { question: "Where do I apply?", answer: "Character certificates are issued at state police commands. Requirements can vary between commands." },
     ],
     related: ["national-passport"],
+    steps: [
+      { title: "Get a request letter", description: "Obtain a letter requesting the character certificate from an employer, institution or your local authority." },
+      { title: "Visit the police command", description: "Go to your state police command or approved office." },
+      { title: "Complete the application", description: "Fill in the application and complete fingerprint capture." },
+      { title: "Pay the processing fee", description: "Pay the applicable processing fee." },
+      { title: "Collect the certificate", description: "Return to collect the character certificate once it is ready." },
+    ],
   },
   {
     slug: "agricultural-loan",
@@ -691,6 +827,13 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { question: "Who can apply for an agricultural loan?", answer: "The Bank of Agriculture serves individual farmers, cooperatives and agri-businesses. Confirm current eligibility with the bank." },
     ],
     related: [],
+    steps: [
+      { title: "Identify the right loan", description: "Review Bank of Agriculture loan products and pick the one that fits your farm." },
+      { title: "Prepare a business plan", description: "Draft a farm or business profile and plan." },
+      { title: "Complete the application", description: "Fill in the loan application form." },
+      { title: "Provide documents", description: "Submit identification and any guarantor or collateral required for the loan size." },
+      { title: "Submit and await review", description: "Submit the application and await the bank's assessment." },
+    ],
   },
   {
     slug: "national-health-insurance",
@@ -714,5 +857,12 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { question: "Is health insurance mandatory?", answer: "Coverage requirements depend on the scheme and employer arrangements. Confirm current rules with NHIA." },
     ],
     related: [],
+    steps: [
+      { title: "Identify your scheme", description: "Confirm which NHIA scheme applies to you, based on your employment or status." },
+      { title: "Complete the enrolment form", description: "Fill in the health insurance enrolment form." },
+      { title: "Provide identification", description: "Submit identification and a passport photograph." },
+      { title: "Submit your enrolment", description: "Lodge the enrolment through the authority or an accredited HMO." },
+      { title: "Receive coverage details", description: "Your coverage and benefits are confirmed once enrolment is processed." },
+    ],
   },
 ];

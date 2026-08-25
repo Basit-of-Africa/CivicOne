@@ -179,6 +179,7 @@ async function main() {
       provider.name,
       provider.abbreviation ?? "",
       s.eligibility,
+      ...(s.steps ?? []).map((step) => step.title),
     ].join(" ");
 
     const service = await prisma.service.upsert({
@@ -258,6 +259,20 @@ async function main() {
           serviceId: service.id,
           question: faq.question,
           answer: faq.answer,
+          sortOrder: index,
+        },
+      });
+    }
+
+    // Steps
+    await prisma.serviceStep.deleteMany({ where: { serviceId: service.id } });
+    for (const [index, step] of (s.steps ?? []).entries()) {
+      await prisma.serviceStep.create({
+        data: {
+          id: generateId("sst"),
+          serviceId: service.id,
+          title: step.title,
+          description: step.description,
           sortOrder: index,
         },
       });

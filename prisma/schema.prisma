@@ -405,6 +405,7 @@ model Service {
   requirements ServiceRequirement[]
   faqs         ServiceFAQ[]
   fees         ServiceFee[]
+  steps        ServiceStep[]
   relatedFrom  ServiceRelated[]    @relation("ServiceRelatedFrom")
   relatedTo    ServiceRelated[]    @relation("ServiceRelatedTo")
   savedBy      SavedService[]
@@ -489,4 +490,18 @@ model SavedService {
   @@unique([userId, serviceId])
   @@index([serviceId])
   @@map("saved_services")
+}
+
+model ServiceStep {
+  id          String   @id @db.VarChar(64)
+  serviceId   String   @map("service_id") @db.VarChar(64)
+  title       String   @db.VarChar(200)
+  description String   @db.Text
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([serviceId])
+  @@map("service_steps")
 }

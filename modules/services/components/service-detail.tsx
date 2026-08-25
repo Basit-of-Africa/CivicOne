@@ -7,6 +7,7 @@ import {
   Fingerprint,
   Landmark,
   ListChecks,
+  ListOrdered,
   ScrollText,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -151,6 +152,35 @@ export function ServiceDetail({
                 </div>
               ))}
             </div>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {service.steps.length > 0 ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ListOrdered className="size-4 text-secondary" aria-hidden="true" />
+              Steps
+            </CardTitle>
+            <CardDescription>How the process typically works.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ol className="space-y-4">
+              {service.steps.map((step, index) => (
+                <li key={index} className="flex gap-3">
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                    {index + 1}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground">{step.title}</p>
+                    {step.description ? (
+                      <p className="mt-0.5 text-sm text-muted-foreground">{step.description}</p>
+                    ) : null}
+                  </div>
+                </li>
+              ))}
+            </ol>
           </CardContent>
         </Card>
       ) : null}

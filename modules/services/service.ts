@@ -41,6 +41,7 @@ export interface ServiceDetailView extends ServiceCardView {
   fees: Array<{ name: string; frequency: string | null; note: string | null }>;
   faqs: Array<{ question: string; answer: string }>;
   related: ServiceCardView[];
+  steps: Array<{ title: string; description: string }>;
 }
 
 const cardSelect = {
@@ -188,6 +189,7 @@ export async function getServiceBySlug(
       requirements: { orderBy: { sortOrder: "asc" }, select: { title: true, description: true, isDocument: true, isVerified: true } },
       fees: { orderBy: { sortOrder: "asc" }, select: { name: true, frequency: true, note: true } },
       faqs: { orderBy: { sortOrder: "asc" }, select: { question: true, answer: true } },
+      steps: { orderBy: { sortOrder: "asc" }, select: { title: true, description: true } },
       relatedFrom: {
         select: { related: { select: cardSelect } },
       },
@@ -204,6 +206,7 @@ export async function getServiceBySlug(
     requirements: row.requirements,
     fees: row.fees,
     faqs: row.faqs,
+    steps: row.steps,
     related: row.relatedFrom.map((r) => toCard(r.related)),
   };
 }

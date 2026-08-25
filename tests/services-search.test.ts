@@ -57,6 +57,7 @@ describe("service search (real database)", () => {
     expect(detail!.requirements.length).toBeGreaterThan(0);
     expect(detail!.fees.length).toBeGreaterThan(0);
     expect(detail!.faqs.length).toBeGreaterThan(0);
+    expect(detail!.steps.length).toBeGreaterThan(0);
     expect(detail!.providerName).toBeTruthy();
   });
 
