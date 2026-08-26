@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
-import { MODE_LABELS } from "./service-card";
 
 interface Option {
   slug: string;
