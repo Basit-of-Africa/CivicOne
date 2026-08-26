@@ -6,7 +6,7 @@ import {
   getJurisdictionOptions,
   getSavedServiceIds,
 } from "@/modules/services/service";
-import { ServiceCard } from "@/modules/services/components/service-card";
+import { ServiceCard, MODE_LABELS } from "@/modules/services/components/service-card";
 import {
   ServiceSearchControls,
   ServiceResultsEmpty,
@@ -20,6 +20,7 @@ interface SearchParams {
   q?: string;
   category?: string;
   jurisdiction?: string;
+  mode?: string;
 }
 
 export default async function FindServicePage({
@@ -37,6 +38,7 @@ export default async function FindServicePage({
       query: params.q,
       category: params.category === "all" ? undefined : params.category,
       jurisdiction: params.jurisdiction === "all" ? undefined : params.jurisdiction,
+      mode: params.mode === "all" ? undefined : (params.mode as "GUIDANCE" | "EXTERNAL" | "INTEGRATED" | undefined),
     }),
   ]);
 
@@ -51,6 +53,7 @@ export default async function FindServicePage({
       <ServiceSearchControls
         categories={categories.map((c) => ({ slug: c.slug, name: c.name }))}
         jurisdictions={jurisdictions.map((j) => ({ slug: j.code, name: j.name }))}
+        modes={(["GUIDANCE", "EXTERNAL", "INTEGRATED"] as const).map((m) => ({ slug: m, name: MODE_LABELS[m] ?? m }))}
       />
 
       {outcome.results.length === 0 ? (

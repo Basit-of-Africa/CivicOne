@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
+import { MODE_LABELS } from "./service-card";
 
 interface Option {
   slug: string;
@@ -22,9 +23,11 @@ interface Option {
 export function ServiceSearchControls({
   categories,
   jurisdictions,
+  modes,
 }: {
   categories: Option[];
   jurisdictions: Option[];
+  modes: Array<{ slug: string; name: string }>;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -32,10 +35,11 @@ export function ServiceSearchControls({
   const q = searchParams.get("q") ?? "";
   const category = searchParams.get("category") ?? "";
   const jurisdiction = searchParams.get("jurisdiction") ?? "";
+  const mode = searchParams.get("mode") ?? "";
 
   function update(next: Record<string, string>) {
     const params = new URLSearchParams(searchParams.toString());
-    const keys = ["q", "category", "jurisdiction"] as const;
+    const keys = ["q", "category", "jurisdiction", "mode"] as const;
     for (const key of keys) {
       const value = next[key];
       if (value) params.set(key, value);
@@ -79,7 +83,19 @@ export function ServiceSearchControls({
           </SelectContent>
         </Select>
 
-        {q || category || jurisdiction ? (
+        <Select value={mode} onValueChange={(v) => update({ mode: v })}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="All modes" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All modes</SelectItem>
+            {modes.map((m) => (
+              <SelectItem key={m.slug} value={m.slug}>{m.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {q || category || jurisdiction || mode ? (
           <Badge
             variant="outline"
             className="cursor-pointer px-3 py-1"

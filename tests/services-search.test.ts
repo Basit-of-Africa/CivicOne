@@ -85,4 +85,12 @@ describe("service search (real database)", () => {
     expect(outcome.intentMatched).toBe(false);
     expect(outcome.related).toHaveLength(0);
   });
+
+  it("filters by service mode", async () => {
+    const results = await searchServices({ mode: "EXTERNAL" });
+    expect(results.length).toBeGreaterThan(0);
+    for (const r of results) {
+      expect(r.mode).toBe("EXTERNAL");
+    }
+  });
 });
