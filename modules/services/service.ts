@@ -165,6 +165,29 @@ export async function searchServices(
   return rows.map(toCard);
 }
 
+export interface ServiceSearchOutcome {
+  results: ServiceCardView[];
+  related: ServiceCardView[];
+  intentMatched: boolean;
+}
+
+export async function searchServicesWithIntent(
+  filters: SearchFilters = {},
+): Promise<ServiceSearchOutcome> {
+  const results = await searchServices(filters);
+  const query = filters.query?.trim() ?? "";
+  const intent = query ? matchIntent(query) : null;
+
+  let related: ServiceCardView[] = [];
+  if (intent && intent.related.length > 0) {
+    related = await getRelatedBySlugs(intent.related);
+    const resultIds = new Set(results.map((r) => r.id));
+    related = related.filter((r) => !resultIds.has(r.id));
+  }
+
+  return { results, related, intentMatched: Boolean(intent) };
+}
+
 export async function getServiceCategories() {
   return db.serviceCategory.findMany({ orderBy: { sortOrder: "asc" } });
 }

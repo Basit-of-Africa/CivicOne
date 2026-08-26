@@ -10,7 +10,12 @@ vi.mock("next/headers", () => ({
 }));
 
 import { db } from "@/server/db";
-import { searchServices, getServiceBySlug, getServiceCategories } from "@/modules/services/service";
+import {
+  searchServices,
+  searchServicesWithIntent,
+  getServiceBySlug,
+  getServiceCategories,
+} from "@/modules/services/service";
 
 beforeAll(async () => {
   cookieJar.clear();
@@ -64,5 +69,20 @@ describe("service search (real database)", () => {
   it("lists all 13 categories", async () => {
     const categories = await getServiceCategories();
     expect(categories).toHaveLength(13);
+  });
+
+  it("surfaces intent-related services for 'I want to start a business'", async () => {
+    const outcome = await searchServicesWithIntent({ query: "I want to start a business." });
+    expect(outcome.intentMatched).toBe(true);
+    expect(outcome.results.some((s) => s.slug === "business-registration")).toBe(true);
+    const surfaced = [...outcome.results, ...outcome.related].map((s) => s.slug);
+    expect(surfaced).toContain("tin-registration");
+    expect(outcome.related.length).toBeGreaterThan(0);
+  });
+
+  it("returns no related services when no intent matches", async () => {
+    const outcome = await searchServicesWithIntent({ query: "xyzzy" });
+    expect(outcome.intentMatched).toBe(false);
+    expect(outcome.related).toHaveLength(0);
   });
 });

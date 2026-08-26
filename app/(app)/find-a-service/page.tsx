@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/ui/page-header";
 import {
-  searchServices,
+  searchServicesWithIntent,
   getServiceCategories,
   getJurisdictionOptions,
   getSavedServiceIds,
@@ -30,10 +30,10 @@ export default async function FindServicePage({
   const params = await searchParams;
   const savedIds = await getSavedServiceIds();
 
-  const [categories, jurisdictions, results] = await Promise.all([
+  const [categories, jurisdictions, outcome] = await Promise.all([
     getServiceCategories(),
     getJurisdictionOptions(),
-    searchServices({
+    searchServicesWithIntent({
       query: params.q,
       category: params.category === "all" ? undefined : params.category,
       jurisdiction: params.jurisdiction === "all" ? undefined : params.jurisdiction,
@@ -53,11 +53,11 @@ export default async function FindServicePage({
         jurisdictions={jurisdictions.map((j) => ({ slug: j.code, name: j.name }))}
       />
 
-      {results.length === 0 ? (
+      {outcome.results.length === 0 ? (
         <ServiceResultsEmpty />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {results.map((service) => (
+          {outcome.results.map((service) => (
             <ServiceCard
               key={service.id}
               service={service}
@@ -66,6 +66,23 @@ export default async function FindServicePage({
           ))}
         </div>
       )}
+
+      {outcome.related.length > 0 ? (
+        <div className="space-y-3">
+          <h2 className="text-base font-semibold text-foreground">
+            Related services
+          </h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {outcome.related.map((service) => (
+              <ServiceCard
+                key={service.id}
+                service={service}
+                saved={savedIds.has(service.id)}
+              />
+            ))}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
