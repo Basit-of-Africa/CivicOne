@@ -42,6 +42,7 @@ model User {
   identityVerifications IdentityVerification[]
   identityVerificationAttempts IdentityVerificationAttempt[]
   savedServices      SavedService[]
+  applications       Application[]
 
   @@map("users")
 }
@@ -334,6 +335,30 @@ enum JurisdictionLevel {
   LOCAL
 }
 
+enum ApplicationStatus {
+  DRAFT
+  READY
+  PAYMENT_PENDING
+  SUBMITTED
+  UNDER_REVIEW
+  ACTION_REQUIRED
+  APPROVED
+  REJECTED
+  COMPLETED
+  CANCELLED
+}
+
+enum WorkflowStepType {
+  ELIGIBILITY
+  FORM
+  DOCUMENTS
+  REVIEW
+  PAYMENT
+  SUBMISSION
+  STATUS
+  COMPLETION
+}
+
 model ServiceCategory {
   id          String   @id @db.VarChar(64)
   slug        String   @unique @db.VarChar(80)
@@ -409,6 +434,8 @@ model Service {
   relatedFrom  ServiceRelated[]    @relation("ServiceRelatedFrom")
   relatedTo    ServiceRelated[]    @relation("ServiceRelatedTo")
   savedBy      SavedService[]
+  workflow     ServiceWorkflow?
+  applications Application[]
 
   @@index([categoryId])
   @@index([providerId])
@@ -504,4 +531,136 @@ model ServiceStep {
 
   @@index([serviceId])
   @@map("service_steps")
+}
+
+// ---------------------------------------------------------------------------
+// Applications (Phase 4) — configuration-driven application engine
+// ---------------------------------------------------------------------------
+
+model ServiceWorkflow {
+  id        String   @id @db.VarChar(64)
+  serviceId String   @unique @map("service_id") @db.VarChar(64)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  service      Service                @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  steps        ServiceWorkflowStep[]
+  applications Application[]
+
+  @@map("service_workflows")
+}
+
+model ServiceWorkflowStep {
+  id          String           @id @db.VarChar(64)
+  workflowId  String           @map("workflow_id") @db.VarChar(64)
+  type        WorkflowStepType
+  title       String           @db.VarChar(160)
+  description String?          @db.Text
+  config      Json?
+  sortOrder   Int              @default(0) @map("sort_order")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  workflow ServiceWorkflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  @@index([workflowId])
+  @@map("service_workflow_steps")
+}
+
+model ServiceFormDefinition {
+  id        String   @id @db.VarChar(64)
+  key       String   @unique @db.VarChar(80)
+  name      String   @db.VarChar(160)
+  config    Json
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("service_form_definitions")
+}
+
+model Application {
+  id            String            @id @db.VarChar(64)
+  reference     String            @unique @db.VarChar(32)
+  userId        String            @map("user_id") @db.VarChar(64)
+  serviceId     String            @map("service_id") @db.VarChar(64)
+  workflowId    String            @map("workflow_id") @db.VarChar(64)
+  status        ApplicationStatus
+  currentStepId String?           @map("current_step_id") @db.VarChar(64)
+  data          Json?
+  providerRef   String?           @map("provider_ref") @db.VarChar(80)
+  providerName  String?           @map("provider_name") @db.VarChar(40)
+  submittedAt   DateTime?         @map("submitted_at")
+  completedAt   DateTime?         @map("completed_at")
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+
+  user          User                         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service       Service                      @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  workflow      ServiceWorkflow              @relation(fields: [workflowId], references: [id], onDelete: Restrict)
+  answers       ApplicationAnswer[]
+  statusHistory ApplicationStatusHistory[]
+  documents     ApplicationDocument[]
+
+  @@index([userId])
+  @@index([serviceId])
+  @@index([status])
+  @@map("applications")
+}
+
+model ApplicationAnswer {
+  id            String @id @db.VarChar(64)
+  applicationId String @map("application_id") @db.VarChar(64)
+  formKey       String @map("form_key") @db.VarChar(80)
+  fieldKey      String @map("field_key") @db.VarChar(120)
+  value         Json?
+  verified      Boolean @default(false)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@unique([applicationId, formKey, fieldKey])
+  @@index([applicationId])
+  @@map("application_answers")
+}
+
+model ApplicationStatusHistory {
+  id            String             @id @db.VarChar(64)
+  applicationId String             @map("application_id") @db.VarChar(64)
+  fromStatus    ApplicationStatus? @map("from_status")
+  toStatus      ApplicationStatus  @map("to_status")
+  reason        String?            @db.VarChar(255)
+  actorUserId   String?            @map("actor_user_id") @db.VarChar(64)
+  createdAt     DateTime           @default(now()) @map("created_at")
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@map("application_status_history")
+}
+
+model ApplicationDocument {
+  id            String   @id @db.VarChar(64)
+  applicationId String   @map("application_id") @db.VarChar(64)
+  formKey       String   @map("form_key") @db.VarChar(80)
+  fieldKey      String   @map("field_key") @db.VarChar(120)
+  label         String   @db.VarChar(200)
+  fileName      String   @map("file_name") @db.VarChar(255)
+  mimeType      String   @map("mime_type") @db.VarChar(100)
+  sizeBytes     Int      @map("size_bytes")
+  fileData      Bytes    @map("file_data")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@map("application_documents")
+}
+
+model ApplicationCounter {
+  year Int @id
+  seq  Int
+
+  @@map("application_counters")
 }
