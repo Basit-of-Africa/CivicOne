@@ -1,4 +1,4 @@
-import { PrismaClient, RoleName } from "@prisma/client";
+import { PrismaClient, Prisma, RoleName } from "@prisma/client";
 import { generateId } from "../lib/id";
 import {
   JURISDICTIONS,
@@ -6,6 +6,7 @@ import {
   SERVICE_PROVIDERS_SEED,
   DEMO_SERVICES_SEED,
 } from "./service-catalogue-data";
+import { FORM_DEFINITIONS_SEED, WORKFLOWS_SEED } from "./application-seed-data";
 
 const prisma = new PrismaClient();
 
@@ -294,6 +295,49 @@ async function main() {
     }
   }
   console.log(`Done. ${await prisma.service.count()} demo services ready.`);
+
+  console.log("Seeding form definitions...");
+  for (const form of FORM_DEFINITIONS_SEED) {
+    await prisma.serviceFormDefinition.upsert({
+      where: { key: form.key },
+      update: { name: form.name, config: form as unknown as Prisma.InputJsonValue },
+      create: {
+        id: generateId("frm"),
+        key: form.key,
+        name: form.name,
+        config: form as unknown as Prisma.InputJsonValue,
+      },
+    });
+  }
+  console.log(`Done. ${await prisma.serviceFormDefinition.count()} form definitions ready.`);
+
+  console.log("Seeding service workflows...");
+  for (const w of WORKFLOWS_SEED) {
+    const service = await prisma.service.findUnique({ where: { slug: w.serviceSlug } });
+    if (!service) {
+      throw new Error(`Seed error: workflow references missing service ${w.serviceSlug}`);
+    }
+    const workflow = await prisma.serviceWorkflow.upsert({
+      where: { serviceId: service.id },
+      update: { isActive: true },
+      create: { id: generateId("wfl"), serviceId: service.id, isActive: true },
+    });
+    await prisma.serviceWorkflowStep.deleteMany({ where: { workflowId: workflow.id } });
+    for (const [index, step] of w.steps.entries()) {
+      await prisma.serviceWorkflowStep.create({
+        data: {
+          id: generateId("wfs"),
+          workflowId: workflow.id,
+          type: step.type,
+          title: step.title,
+          description: step.description ?? null,
+          config: (step.config ?? undefined) as Prisma.InputJsonValue | undefined,
+          sortOrder: index,
+        },
+      });
+    }
+  }
+  console.log(`Done. ${await prisma.serviceWorkflow.count()} workflows ready.`);
 }
 
 main()
