@@ -30,6 +30,11 @@ const envSchema = z.object({
     .transform((value) => value === "true"),
   RATE_LIMIT_MAX_ATTEMPTS: z.coerce.number().int().positive().default(5),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(900000),
+  DOCUMENT_SIGNING_SECRET: z
+    .string()
+    .min(16, "DOCUMENT_SIGNING_SECRET must be at least 16 characters")
+    .default("civicone-demo-document-signing-secret-change-me"),
+  DOCUMENT_SIGNED_URL_TTL_SECONDS: z.coerce.number().int().positive().default(300),
 });
 
 const parsed = envSchema.safeParse(process.env);

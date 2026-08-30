@@ -60,4 +60,13 @@ describe("role-based authorisation", () => {
     expect(hasPermission(["CONTENT_ADMIN"], PERMISSIONS.SERVICES_SAVE)).toBe(true);
     expect(hasPermission(["IDENTITY_ADMIN"], PERMISSIONS.SERVICES_SAVE)).toBe(false);
   });
+
+  it("grants records:self and documents:self to USER and PROFESSIONAL", () => {
+    expect(roleHasPermission("USER", PERMISSIONS.RECORDS_SELF)).toBe(true);
+    expect(roleHasPermission("USER", PERMISSIONS.DOCUMENTS_SELF)).toBe(true);
+    expect(roleHasPermission("PROFESSIONAL", PERMISSIONS.RECORDS_SELF)).toBe(true);
+    expect(roleHasPermission("PROFESSIONAL", PERMISSIONS.DOCUMENTS_SELF)).toBe(true);
+    expect(roleHasPermission("SERVICE_ADMIN", PERMISSIONS.RECORDS_SELF)).toBe(false);
+    expect(roleHasPermission("SERVICE_ADMIN", PERMISSIONS.DOCUMENTS_SELF)).toBe(false);
+  });
 });

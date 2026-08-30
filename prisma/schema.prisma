@@ -43,6 +43,8 @@ model User {
   identityVerificationAttempts IdentityVerificationAttempt[]
   savedServices      SavedService[]
   applications       Application[]
+  records            GovernmentServiceRecord[]
+  walletDocuments    WalletDocument[]
 
   @@map("users")
 }
@@ -385,6 +387,8 @@ model ServiceProvider {
 
   services Service[]
 
+  records GovernmentServiceRecord[]
+
   @@map("service_providers")
 }
 
@@ -436,6 +440,7 @@ model Service {
   savedBy      SavedService[]
   workflow     ServiceWorkflow?
   applications Application[]
+  records      GovernmentServiceRecord[]
 
   @@index([categoryId])
   @@index([providerId])
@@ -601,6 +606,7 @@ model Application {
   answers       ApplicationAnswer[]
   statusHistory ApplicationStatusHistory[]
   documents     ApplicationDocument[]
+  record        GovernmentServiceRecord?
 
   @@index([userId])
   @@index([serviceId])
@@ -663,4 +669,108 @@ model ApplicationCounter {
   seq  Int
 
   @@map("application_counters")
+}
+
+// ---------------------------------------------------------------------------
+// Service records & document wallet (Phase 5)
+// ---------------------------------------------------------------------------
+// Approved applications produce persistent GovernmentServiceRecords. Users
+// keep private documents in a wallet (wallet_documents) stored as BYTEA;
+// downloads only ever happen via short-lived HMAC-signed URLs.
+
+enum RecordStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  EXPIRED
+  REJECTED
+  CANCELLED
+  ARCHIVED
+}
+
+enum RecordVerificationStatus {
+  UNVERIFIED
+  USER_ASSERTED
+  PENDING
+  VERIFIED
+  GOVERNMENT_VERIFIED
+  EXPIRED
+  REJECTED
+}
+
+enum RecordSource {
+  CIVICONE
+  USER_PROVIDED
+  GOVERNMENT_API
+  EXTERNAL_PROVIDER
+  ADMIN_VERIFIED
+}
+
+enum DocumentCategory {
+  IDENTITY
+  CERTIFICATES
+  LICENCES
+  BUSINESS
+  TAX
+  EDUCATION
+  PROPERTY
+  EMPLOYMENT
+  OTHER
+}
+
+model GovernmentServiceRecord {
+  id                  String                   @id @db.VarChar(64)
+  userId              String                   @map("user_id") @db.VarChar(64)
+  serviceId           String                   @map("service_id") @db.VarChar(64)
+  providerId          String                   @map("provider_id") @db.VarChar(64)
+  applicationId       String?                  @unique @map("application_id") @db.VarChar(64)
+  recordType          String                   @map("record_type") @db.VarChar(80)
+  externalReference   String?                  @map("external_reference") @db.VarChar(120)
+  status              RecordStatus             @default(ACTIVE)
+  issueDate           DateTime?                @map("issue_date")
+  expiryDate          DateTime?                @map("expiry_date")
+  registrationDate    DateTime?                @map("registration_date")
+  verificationStatus  RecordVerificationStatus @default(VERIFIED) @map("verification_status")
+  source              RecordSource             @default(CIVICONE)
+  metadata            Json?
+  createdAt           DateTime                 @default(now()) @map("created_at")
+  updatedAt           DateTime                 @updatedAt @map("updated_at")
+
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service     Service            @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  provider    ServiceProvider    @relation(fields: [providerId], references: [id], onDelete: Restrict)
+  application Application?       @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  documents   WalletDocument[]
+
+  @@index([userId])
+  @@index([serviceId])
+  @@map("government_service_records")
+}
+
+model WalletDocument {
+  id                 String                   @id @db.VarChar(64)
+  userId             String                   @map("user_id") @db.VarChar(64)
+  recordId           String?                  @map("record_id") @db.VarChar(64)
+  category           DocumentCategory
+  name               String                   @db.VarChar(160)
+  fileName           String                   @map("file_name") @db.VarChar(255)
+  mimeType           String                   @map("mime_type") @db.VarChar(80)
+  sizeBytes          Int                      @map("size_bytes")
+  fileData           Bytes                    @map("file_data")
+  issuer             String?                  @db.VarChar(160)
+  issueDate          DateTime?                @map("issue_date")
+  expiryDate         DateTime?                @map("expiry_date")
+  verificationStatus RecordVerificationStatus @default(UNVERIFIED) @map("verification_status")
+  source             RecordSource             @default(USER_PROVIDED)
+  metadata            Json?
+  createdAt           DateTime                @default(now()) @map("created_at")
+  updatedAt           DateTime                @updatedAt @map("updated_at")
+
+  user   User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  record GovernmentServiceRecord? @relation(fields: [recordId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([category])
+  @@index([recordId])
+  @@map("wallet_documents")
 }
