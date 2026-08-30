@@ -12,6 +12,15 @@ const TONE_BY_STATUS: Record<string, "neutral" | "success" | "warning" | "error"
   VERIFICATION_PENDING: "warning",
   VERIFICATION_FAILED: "error",
   REQUIRES_MANUAL_REVIEW: "warning",
+  DRAFT: "neutral",
+  READY: "info",
+  PAYMENT_PENDING: "warning",
+  SUBMITTED: "info",
+  UNDER_REVIEW: "info",
+  ACTION_REQUIRED: "warning",
+  APPROVED: "success",
+  COMPLETED: "success",
+  CANCELLED: "neutral",
 };
 
 export interface StatusBadgeProps {

@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { getServiceBySlug, getSavedServiceIds } from "@/modules/services/service";
+import { hasActiveWorkflow } from "@/modules/applications/workflow";
 import { ServiceDetail } from "@/modules/services/components/service-detail";
 
 export const metadata: Metadata = {
@@ -21,6 +22,7 @@ export default async function ServicePage({
   if (!service) notFound();
 
   const savedIds = await getSavedServiceIds();
+  const workflowAvailable = await hasActiveWorkflow(service.id);
 
   return (
     <div className="space-y-6">
@@ -39,7 +41,7 @@ export default async function ServicePage({
           </Button>
         }
       />
-      <ServiceDetail service={service} saved={savedIds.has(service.id)} />
+      <ServiceDetail service={service} saved={savedIds.has(service.id)} workflowAvailable={workflowAvailable} />
     </div>
   );
 }

@@ -17,6 +17,7 @@ import type { ServiceDetailView } from "@/modules/services/service";
 import { SaveServiceButton } from "./save-service-button";
 import { ServiceFaq } from "./service-faq";
 import { MODE_LABELS } from "./service-card";
+import { StartApplicationButton } from "@/modules/applications/components/start-application-button";
 import { TRUST_DISCLAIMER } from "@/lib/constants";
 
 const DEMO_NOTE = "Demo information. Confirm current requirements with the official provider.";
@@ -25,9 +26,11 @@ const FEE_NOTE = "Verify current fee with official provider.";
 export function ServiceDetail({
   service,
   saved,
+  workflowAvailable,
 }: {
   service: ServiceDetailView;
   saved: boolean;
+  workflowAvailable: boolean;
 }) {
   return (
     <div className="space-y-6">
@@ -42,6 +45,9 @@ export function ServiceDetail({
           <p className="max-w-2xl text-muted-foreground">{service.summary}</p>
         </div>
         <div className="flex shrink-0 gap-2">
+          {workflowAvailable ? (
+            <StartApplicationButton serviceId={service.id} />
+          ) : null}
           <SaveServiceButton serviceId={service.id} saved={saved} />
           {service.mode === "EXTERNAL" && service.officialUrl ? (
             <Button asChild>
