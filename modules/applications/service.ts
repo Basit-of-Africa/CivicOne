@@ -26,6 +26,7 @@ import {
 } from "./workflow-config";
 import { getMockProvider, type MockProviderId } from "./providers";
 import { applicationReferenceSchema } from "./validators";
+import { createRecordForApprovedApplication } from "@/modules/records/service";
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_MIME = new Set([
@@ -673,6 +674,13 @@ export async function simulateProvider(
       where: { id: application.id },
       data: { completedAt: new Date() },
     });
+    if (outcome.status === "APPROVED") {
+      try {
+        await createRecordForApprovedApplication(application.id);
+      } catch (error) {
+        console.error("[records] failed to create record on approval", error);
+      }
+    }
   }
 
   const ctx = await getRequestContext();
