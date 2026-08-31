@@ -1,8 +1,15 @@
 import "server-only";
-import type { DocumentCategory } from "@prisma/client";
+import type {
+  DocumentCategory,
+  RecordSource,
+  RecordStatus,
+  RecordVerificationStatus,
+} from "@prisma/client";
 import { db } from "@/server/db";
 import { AppError } from "@/server/errors";
 import { logAudit } from "@/server/audit";
+import { requireUser } from "@/server/auth/session";
+import { assertPermission, PERMISSIONS } from "@/server/rbac";
 import { generateId } from "@/lib/id";
 import { buildCertificatePdf } from "./certificate";
 
@@ -113,4 +120,183 @@ export async function createRecordForApprovedApplication(
   });
 
   return { recordId: record.id, certificateId: certificate.id, created: true };
+}
+
+const EXPIRING_SOON_DAYS = 60;
+
+export interface RecordCardView {
+  id: string;
+  recordType: string;
+  serviceSlug: string;
+  serviceName: string;
+  providerName: string;
+  providerAbbreviation: string | null;
+  status: RecordStatus;
+  verificationStatus: RecordVerificationStatus;
+  source: RecordSource;
+  externalReference: string | null;
+  issueDate: Date | null;
+  expiryDate: Date | null;
+}
+
+export interface WalletDocumentView {
+  id: string;
+  category: string;
+  name: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  issuer: string | null;
+  issueDate: Date | null;
+  expiryDate: Date | null;
+  verificationStatus: RecordVerificationStatus;
+  source: RecordSource;
+  createdAt: Date;
+}
+
+export interface MyServicesOverview {
+  active: RecordCardView[];
+  completed: RecordCardView[];
+  expiringSoon: RecordCardView[];
+  archived: RecordCardView[];
+}
+
+const recordSelect = {
+  id: true,
+  recordType: true,
+  status: true,
+  verificationStatus: true,
+  source: true,
+  externalReference: true,
+  issueDate: true,
+  expiryDate: true,
+  createdAt: true,
+  service: { select: { slug: true, name: true } },
+  provider: { select: { name: true, abbreviation: true } },
+} as const;
+
+async function loadOwnedRecords() {
+  const user = await requireUser();
+  assertPermission(user.roleNames, PERMISSIONS.RECORDS_SELF);
+  const rows = await db.governmentServiceRecord.findMany({
+    where: { userId: user.id },
+    orderBy: { createdAt: "desc" },
+    select: recordSelect,
+  });
+  return rows.map((row) => ({
+    id: row.id,
+    recordType: row.recordType,
+    serviceSlug: row.service.slug,
+    serviceName: row.service.name,
+    providerName: row.provider.name,
+    providerAbbreviation: row.provider.abbreviation,
+    status: row.status,
+    verificationStatus: row.verificationStatus,
+    source: row.source,
+    externalReference: row.externalReference,
+    issueDate: row.issueDate,
+    expiryDate: row.expiryDate,
+  }));
+}
+
+export async function getMyServicesOverview(): Promise<MyServicesOverview> {
+  const cards = await loadOwnedRecords();
+  const now = new Date();
+  const soon = new Date(now.getTime() + EXPIRING_SOON_DAYS * 24 * 60 * 60 * 1000);
+  return {
+    active: cards.filter((c) => c.status === "ACTIVE"),
+    completed: cards.filter((c) => c.status === "COMPLETED"),
+    expiringSoon: cards.filter(
+      (c) => c.expiryDate !== null && c.expiryDate! > now && c.expiryDate! <= soon,
+    ),
+    archived: cards.filter((c) => c.status === "ARCHIVED"),
+  };
+}
+
+export interface RecordDetailView {
+  id: string;
+  recordType: string;
+  serviceSlug: string;
+  serviceName: string;
+  serviceSummary: string;
+  providerName: string;
+  providerAbbreviation: string | null;
+  officialUrl: string | null;
+  status: RecordStatus;
+  verificationStatus: RecordVerificationStatus;
+  source: RecordSource;
+  externalReference: string | null;
+  issueDate: Date | null;
+  expiryDate: Date | null;
+  registrationDate: Date | null;
+  createdAt: Date;
+  documents: WalletDocumentView[];
+  application: {
+    id: string;
+    reference: string;
+    status: string;
+    timeline: Array<{ fromStatus: string | null; toStatus: string; reason: string | null; createdAt: Date }>;
+  } | null;
+}
+
+export async function getRecordById(id: string): Promise<RecordDetailView> {
+  const user = await requireUser();
+  assertPermission(user.roleNames, PERMISSIONS.RECORDS_SELF);
+  const record = await db.governmentServiceRecord.findUnique({
+    where: { id },
+    include: {
+      service: { select: { slug: true, name: true, summary: true } },
+      provider: { select: { name: true, abbreviation: true, officialUrl: true } },
+      application: { include: { statusHistory: { orderBy: { createdAt: "asc" } } } },
+      documents: { orderBy: { createdAt: "asc" } },
+    },
+  });
+  if (!record || record.userId !== user.id) {
+    throw new AppError("Record not found.", { code: "NOT_FOUND" });
+  }
+  return {
+    id: record.id,
+    recordType: record.recordType,
+    serviceSlug: record.service.slug,
+    serviceName: record.service.name,
+    serviceSummary: record.service.summary,
+    providerName: record.provider.name,
+    providerAbbreviation: record.provider.abbreviation,
+    officialUrl: record.provider.officialUrl,
+    status: record.status,
+    verificationStatus: record.verificationStatus,
+    source: record.source,
+    externalReference: record.externalReference,
+    issueDate: record.issueDate,
+    expiryDate: record.expiryDate,
+    registrationDate: record.registrationDate,
+    createdAt: record.createdAt,
+    documents: record.documents.map((d) => ({
+      id: d.id,
+      category: d.category,
+      name: d.name,
+      fileName: d.fileName,
+      mimeType: d.mimeType,
+      sizeBytes: d.sizeBytes,
+      issuer: d.issuer,
+      issueDate: d.issueDate,
+      expiryDate: d.expiryDate,
+      verificationStatus: d.verificationStatus,
+      source: d.source,
+      createdAt: d.createdAt,
+    })),
+    application: record.application
+      ? {
+          id: record.application.id,
+          reference: record.application.reference,
+          status: record.application.status,
+          timeline: record.application.statusHistory.map((h) => ({
+            fromStatus: h.fromStatus,
+            toStatus: h.toStatus,
+            reason: h.reason,
+            createdAt: h.createdAt,
+          })),
+        }
+      : null,
+  };
 }
