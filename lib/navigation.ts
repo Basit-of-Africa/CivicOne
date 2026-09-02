@@ -2,6 +2,7 @@ import {
   Bell,
   FileText,
   Files,
+  Fingerprint,
   FolderOpen,
   HelpCircle,
   History,
@@ -35,6 +36,7 @@ export const PRIMARY_NAV: NavItem[] = [
 export const SECONDARY_NAV: NavItem[] = [
   { label: "Notifications", href: "/notifications", icon: Bell },
   { label: "Profile", href: "/profile", icon: User },
+  { label: "Identity", href: "/profile/identity", icon: Fingerprint },
   { label: "Privacy", href: "/privacy", icon: Shield },
   { label: "Security", href: "/security", icon: Lock },
   { label: "Help", href: "/help", icon: HelpCircle },

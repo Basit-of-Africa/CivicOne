@@ -44,6 +44,20 @@ const roles: Array<{
   },
 ];
 
+const providers: Array<{
+  code: string;
+  name: string;
+  isMock: boolean;
+  isActive: boolean;
+}> = [
+  {
+    code: "MOCK_NIN",
+    name: "Demo NIN provider (mock)",
+    isMock: true,
+    isActive: true,
+  },
+];
+
 async function main() {
   console.log("Seeding roles...");
 
@@ -62,6 +76,29 @@ async function main() {
 
   const count = await prisma.role.count();
   console.log(`Done. ${count} roles ready.`);
+
+  console.log("Seeding identity providers...");
+
+  for (const provider of providers) {
+    await prisma.identityProvider.upsert({
+      where: { code: provider.code },
+      update: {
+        name: provider.name,
+        isMock: provider.isMock,
+        isActive: provider.isActive,
+      },
+      create: {
+        id: generateId("ipr"),
+        code: provider.code,
+        name: provider.name,
+        isMock: provider.isMock,
+        isActive: provider.isActive,
+      },
+    });
+  }
+
+  const providerCount = await prisma.identityProvider.count();
+  console.log(`Done. ${providerCount} identity providers ready.`);
 }
 
 main()

@@ -38,6 +38,9 @@ model User {
   emailVerifications EmailVerification[]
   passwordResets     PasswordReset[]
   auditLogs          AuditLog[]
+  identityCredentials IdentityCredential[]
+  identityVerifications IdentityVerification[]
+  identityVerificationAttempts IdentityVerificationAttempt[]
 
   @@map("users")
 }
@@ -205,25 +208,111 @@ model AuditLog {
 }
 
 // ---------------------------------------------------------------------------
-// Identity (Phase 2 placeholder — NO NIN storage in Phase 1)
+// Identity (Phase 2)
 // ---------------------------------------------------------------------------
+// NIN is NEVER a key or public identifier. It is stored encrypted inside
+// IdentityCredential.encryptedValue and only ever surfaced masked.
+
+enum IdentityVerificationStatus {
+  UNVERIFIED
+  VERIFICATION_PENDING
+  VERIFIED
+  VERIFICATION_FAILED
+  REQUIRES_MANUAL_REVIEW
+  SUSPENDED
+}
 
 model IdentityProfile {
   id                   String                      @id @db.VarChar(64)
   userId               String                      @unique @map("user_id") @db.VarChar(64)
   verificationStatus   IdentityVerificationStatus  @default(UNVERIFIED) @map("verification_status")
+  providerId           String?                     @map("provider_id") @db.VarChar(64)
   verifiedAt           DateTime?                   @map("verified_at")
+  legalName            String?                     @map("legal_name") @db.VarChar(160)
+  dateOfBirth          DateTime?                   @map("date_of_birth")
+  gender               Gender?
+  nationality          String?                     @db.VarChar(80)
+  stateOfOrigin        String?                     @map("state_of_origin") @db.VarChar(80)
+  lga                  String?                     @db.VarChar(80)
   createdAt            DateTime                    @default(now()) @map("created_at")
   updatedAt            DateTime                    @updatedAt @map("updated_at")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                 User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider             IdentityProvider?           @relation("ProfileProvider", fields: [providerId], references: [id], onDelete: SetNull)
+  credentials          IdentityCredential[]
 
   @@map("identity_profiles")
 }
 
-enum IdentityVerificationStatus {
-  UNVERIFIED
-  PENDING
-  VERIFIED
-  REJECTED
+model IdentityProvider {
+  id        String   @id @db.VarChar(64)
+  code      String   @unique @db.VarChar(40)
+  name      String   @db.VarChar(120)
+  isMock    Boolean  @default(false) @map("is_mock")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  profiles             IdentityProfile[]           @relation("ProfileProvider")
+  verifications        IdentityVerification[]
+  verificationAttempts IdentityVerificationAttempt[]
+
+  @@map("identity_providers")
+}
+
+model IdentityCredential {
+  id             String   @id @db.VarChar(64)
+  userId         String   @map("user_id") @db.VarChar(64)
+  profileId      String   @map("profile_id") @db.VarChar(64)
+  kind           String   @default("NIN") @db.VarChar(20)
+  maskedValue    String   @map("masked_value") @db.VarChar(20)
+  encryptedValue String   @map("encrypted_value") @db.Text
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profile IdentityProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, kind])
+  @@index([profileId])
+  @@map("identity_credentials")
+}
+
+enum IdentityVerificationAttemptResult {
+  SUCCESS
+  FAILED
+  REQUIRES_REVIEW
+  UNAVAILABLE
+}
+
+model IdentityVerification {
+  id         String   @id @db.VarChar(64)
+  userId     String   @map("user_id") @db.VarChar(64)
+  providerId String   @map("provider_id") @db.VarChar(64)
+  reference  String   @unique @db.VarChar(120)
+  verifiedAt DateTime @default(now()) @map("verified_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider IdentityProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
+  @@map("identity_verifications")
+}
+
+model IdentityVerificationAttempt {
+  id         String                            @id @db.VarChar(64)
+  userId     String                            @map("user_id") @db.VarChar(64)
+  providerId String                            @map("provider_id") @db.VarChar(64)
+  result     IdentityVerificationAttemptResult
+  reasonCode String?                           @map("reason_code") @db.VarChar(80)
+  reference  String?                           @db.VarChar(120)
+  createdAt  DateTime                          @default(now()) @map("created_at")
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider IdentityProvider @relation(fields: [providerId], references: [id], onDelete: Restrict)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("identity_verification_attempts")
 }

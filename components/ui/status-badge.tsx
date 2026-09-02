@@ -9,6 +9,9 @@ const TONE_BY_STATUS: Record<string, "neutral" | "success" | "warning" | "error"
   CLOSED: "neutral",
   PENDING: "warning",
   REJECTED: "error",
+  VERIFICATION_PENDING: "warning",
+  VERIFICATION_FAILED: "error",
+  REQUIRES_MANUAL_REVIEW: "warning",
 };
 
 export interface StatusBadgeProps {
