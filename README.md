@@ -2,7 +2,7 @@
 
 CivicOne is an independent technology platform that helps Nigerians discover, initiate, manage and organise public and administrative services. It is **not a government agency** and is not affiliated with NIMC, CAC, FRSC, NIS, FIRS or any other government body.
 
-This repository contains **Phase 1 + Phase 2 + Phase 3 + Phase 4**: a production-grade foundation (architecture, database, authentication, roles, design system, app shell) extended by a mock NIN identity-verification layer, a **live service catalogue** (search, categories, detail pages, saved services) and a **generic application engine** (configuration-driven forms, guided workflows, mock providers, application tracking). Later phases extend it without a rewrite.
+This repository contains **Phase 1 + Phase 2 + Phase 3 + Phase 4 + Phase 5**: a production-grade foundation (architecture, database, authentication, roles, design system, app shell) extended by a mock NIN identity-verification layer, a **live service catalogue** (search, categories, detail pages, saved services), a **generic application engine** (configuration-driven forms, guided workflows, mock providers, application tracking) and a **persistent administrative record layer** (permanent service records, a private document wallet with signed URLs, and a personal timeline). Later phases extend it without a rewrite.
 
 > **Trust disclaimer**: CivicOne is an independent technology platform. It is not a government agency. Government service names used here are for demonstration only.
 
@@ -65,14 +65,18 @@ Route groups `(marketing)` and `(app)` affect only file organisation; the `auth/
 - `applications` — user applications with references `CO-<year>-<6-digit>`; never a NIN.
 - `application_answers` / `application_status_history` / `application_documents` — answers, status timeline and uploaded files (bytes stored in DB for the demo).
 - `application_counters` — per-year sequence counters for references.
+- `government_service_records` — permanent records issued from approved applications (source CIVICONE, verification GOVERNMENT_VERIFIED in the demo).
+- `wallet_documents` — private document wallet; files stored as bytes in the DB (object-storage stand-in for this demo), downloaded only via short-lived signed URLs.
 
 **Identity verification (Phase 2)**: uses a **mock provider only**. It NEVER contacts NIMC or any real identity source, and only succeeds for the fictional demo NINs (`00000000001`–`00000000003`) labelled DEMO DATA in the UI. Any other NIN — including a real person's — always fails. Raw NIN access requires the `identity:read:full` permission; the UI only ever shows masked values.
 
 **Service catalogue (Phase 2)**: a fully searchable, browsable directory of 22 demo public services across 13 categories (identity, business, tax, immigration, transport, education, health, property, employment, agriculture, licences, family/social, legal). Search understands natural phrasing and common Nigerian synonyms (e.g. "driving licence", "business registration", "travelling abroad"). Signed-in users can save services; saving requires the `services:save` permission.
 
-**Applications (Phase 4)**: a generic, configuration-driven application engine. Users start applications on services that have an active workflow (demo: Business Registration, Nigerian Passport, Driver's Licence), complete dynamic forms, attach documents, review, submit and receive a `CO-2026-000001`-style reference. Identity-verified fields are pre-filled from the Phase 2 profile and locked. Three mock providers (CAC, Passport, Driver Licence) simulate submission, processing, approval and rejection. Applications are tracked under `/applications`. No permanent government service records are created yet (Phase 5).
+**Applications (Phase 4)**: a generic, configuration-driven application engine. Users start applications on services that have an active workflow (demo: Business Registration, Nigerian Passport, Driver's Licence), complete dynamic forms, attach documents, review, submit and receive a `CO-2026-000001`-style reference. Identity-verified fields are pre-filled from the Phase 2 profile and locked. Three mock providers (CAC, Passport, Driver Licence) simulate submission, processing, approval and rejection. Applications are tracked under `/applications`.
 
-**Not built yet** (reserved for later phases): real NIMC-backed verification, service records, document wallet, notifications/records, consent sharing, payments, admin consoles, AI.
+**Service records & wallet (Phase 5)**: approved applications automatically produce a `GovernmentServiceRecord` (e.g. a Business Registration) plus a certificate PDF stored in the user's document wallet. `/services/my` groups records into Active / Expiring soon / Applications / Completed / Archived; `/records/[id]` shows the full record with linked documents and the originating application. The document wallet (`/documents`) accepts PDF/JPG/PNG/WEBP up to 5 MB, stored privately with per-file categories and metadata; files are only reachable through short-lived signed URLs. The `/timeline` page aggregates identity verification, application, record and document events. This completes the central CivicOne loop: verify identity → apply → approval → record created → document stored → record in My Services → record on the timeline.
+
+**Not built yet** (reserved for Phase 6): real NIMC-backed verification, consent sharing, payments, admin consoles, real provider integrations, AI.
 
 ## Getting started
 
