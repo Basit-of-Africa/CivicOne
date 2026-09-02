@@ -28,3 +28,11 @@ export const uploadDocumentSchema = z.object({
 export const documentIdSchema = z.object({
   documentId: z.string().min(1),
 });
+
+export const reuseWalletDocumentSchema = z.object({
+  applicationId: z.string().min(1),
+  formKey: z.string().min(1),
+  fieldKey: z.string().min(1),
+  label: z.string().min(1),
+  walletDocumentId: z.string().min(1),
+});

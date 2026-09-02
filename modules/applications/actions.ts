@@ -11,10 +11,12 @@ import {
   simulateProvider,
   startApplication,
   removeDocument,
+  reuseWalletDocument,
 } from "./service";
 import {
   applicationIdSchema,
   documentIdSchema,
+  reuseWalletDocumentSchema,
   saveAnswersSchema,
   serviceIdForApplicationSchema,
   uploadDocumentSchema,
@@ -101,4 +103,24 @@ export async function cancelApplicationAction(applicationId: string) {
   const parsed = applicationIdSchema.safeParse({ applicationId });
   if (!parsed.success) return fail(validationError(toFieldErrors(parsed.error)));
   return withActionResult(() => cancelApplication(applicationId));
+}
+
+export async function reuseWalletDocumentAction(input: {
+  applicationId: string;
+  formKey: string;
+  fieldKey: string;
+  label: string;
+  walletDocumentId: string;
+}) {
+  const parsed = reuseWalletDocumentSchema.safeParse(input);
+  if (!parsed.success) return fail(validationError(toFieldErrors(parsed.error)));
+  return withActionResult(() =>
+    reuseWalletDocument(
+      parsed.data.applicationId,
+      parsed.data.formKey,
+      parsed.data.fieldKey,
+      parsed.data.label,
+      parsed.data.walletDocumentId,
+    ),
+  );
 }

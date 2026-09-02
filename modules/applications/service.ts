@@ -546,6 +546,59 @@ export async function removeDocument(applicationId: string, documentId: string):
   await db.applicationDocument.delete({ where: { id: documentId } });
 }
 
+export async function reuseWalletDocument(
+  applicationId: string,
+  formKey: string,
+  fieldKey: string,
+  label: string,
+  walletDocumentId: string,
+): Promise<void> {
+  const user = await requireUser();
+  assertPermission(user.roleNames, PERMISSIONS.APPLICATIONS_SELF);
+  const application = await getOwnedApplication(applicationId, user);
+  assertEditable(application.status);
+
+  const walletDoc = await db.walletDocument.findFirst({
+    where: { id: walletDocumentId, userId: user.id },
+  });
+  if (!walletDoc) throw new AppError("Wallet document not found.", { code: "NOT_FOUND" });
+
+  const document = await db.applicationDocument.create({
+    data: {
+      id: generateId("adoc"),
+      applicationId,
+      formKey,
+      fieldKey,
+      label,
+      fileName: walletDoc.fileName,
+      mimeType: walletDoc.mimeType,
+      sizeBytes: walletDoc.sizeBytes,
+      fileData: walletDoc.fileData,
+    },
+  });
+
+  const data = (application.data as Record<string, Record<string, unknown>> | null) ?? {};
+  if (!data[formKey]) data[formKey] = {};
+  data[formKey][fieldKey] = document.id;
+
+  await db.applicationAnswer.upsert({
+    where: { applicationId_formKey_fieldKey: { applicationId, formKey, fieldKey } },
+    update: { value: document.id },
+    create: {
+      id: generateId("ans"),
+      applicationId,
+      formKey,
+      fieldKey,
+      value: document.id,
+    },
+  });
+
+  await db.application.update({
+    where: { id: applicationId },
+    data: { data: data as never },
+  });
+}
+
 export async function advanceStep(applicationId: string): Promise<void> {
   const user = await requireUser();
   assertPermission(user.roleNames, PERMISSIONS.APPLICATIONS_SELF);
