@@ -12,6 +12,7 @@ import { ApplicationTimeline } from "@/modules/applications/components/applicati
 import { SimulateProviderButton } from "@/modules/applications/components/simulate-provider-button";
 import { toVerifiedIdentity } from "@/modules/applications/identity";
 import { getFormDefinitionMap } from "@/modules/applications/forms";
+import { getWalletDocuments } from "@/modules/documents/service";
 
 export const metadata: Metadata = {
   title: "Application",
@@ -31,6 +32,7 @@ export default async function ApplicationDetailPage({
 
   const formDefinitions = await getFormDefinitionMap();
   const identity = toVerifiedIdentity(application.identity);
+  const walletDocuments = await getWalletDocuments();
   const currentStep = application.steps.find((s) => s.id === application.currentStepId) ?? null;
   const isTracking = TRACKING_STATUSES.has(application.status);
 
@@ -96,6 +98,7 @@ export default async function ApplicationDetailPage({
           identity={identity}
           documents={application.documents}
           formDefinitions={formDefinitions}
+          walletDocuments={walletDocuments}
         />
       ) : (
         <Card>

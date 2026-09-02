@@ -7,6 +7,7 @@ import {
   FileText,
   Files,
   FolderOpen,
+  ChevronRight,
 } from "lucide-react";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/server/auth/session";
@@ -18,6 +19,10 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { getGreeting } from "@/lib/format";
 import { IdentityCard } from "@/components/dashboard/identity-card";
 import { EmailVerificationBanner } from "@/components/dashboard/email-verification-banner";
+import { getWalletDocuments, signDocumentUrl } from "@/modules/documents/service";
+import { getMyServicesOverview } from "@/modules/records/service";
+import { getTimeline } from "@/modules/timeline/service";
+import { getApplicationsForUser } from "@/modules/applications/service";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -31,6 +36,15 @@ export default async function DashboardPage() {
   const greeting = `${getGreeting()}, ${firstName}`;
   const needsEmailVerification = !!user.email && !user.emailVerifiedAt;
   const identityStatus = await getIdentityStatus();
+
+  const [applications, documents, timeline, overview] = await Promise.all([
+    getApplicationsForUser(),
+    getWalletDocuments({ limit: 4 }),
+    getTimeline({ limit: 5 }),
+    getMyServicesOverview(),
+  ]);
+  const expiringSoon = overview.expiringSoon;
+  const recentApplications = applications.slice(0, 3);
 
   return (
     <div className="space-y-6">
@@ -56,18 +70,40 @@ export default async function DashboardPage() {
             <CardHeader>
               <SectionHeader
                 title="My Services"
-                description="Services you've discovered or subscribed to."
-                actionLabel="Explore services"
-                actionHref="/find-a-service"
+                description="Records issued to you and applications in progress."
+                actionLabel="View"
+                actionHref="/services/my"
               />
             </CardHeader>
             <CardContent>
-              <EmptyState
-                compact
-                icon={<Files className="size-5" aria-hidden="true" />}
-                title="You don't have any services yet."
-                description="Browse the service catalogue and save the ones relevant to you."
-              />
+              {overview.active.length > 0 ? (
+                <div className="space-y-3">
+                  <ul className="space-y-1">
+                    {overview.active.map((record) => (
+                      <li key={record.id}>
+                        <Link
+                          href={`/records/${record.id}`}
+                          className="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                        >
+                          {record.serviceName}
+                          <ChevronRight className="size-4 text-muted-foreground" aria-hidden="true" />
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="px-2 text-xs text-muted-foreground">
+                    {overview.active.length} active record{overview.active.length === 1 ? "" : "s"}
+                    {overview.completed.length > 0 ? ` · ${overview.completed.length} completed` : ""}
+                  </p>
+                </div>
+              ) : (
+                <EmptyState
+                  compact
+                  icon={<Files className="size-5" aria-hidden="true" />}
+                  title="You don't have any records yet."
+                  description="Apply for a service and its record will appear here on approval."
+                />
+              )}
             </CardContent>
           </Card>
 
@@ -76,17 +112,33 @@ export default async function DashboardPage() {
               <SectionHeader
                 title="My Applications"
                 description="Track the applications you've started."
-                actionLabel="Find a service"
-                actionHref="/find-a-service"
+                actionLabel="View all"
+                actionHref="/applications"
               />
             </CardHeader>
             <CardContent>
-              <EmptyState
-                compact
-                icon={<FileText className="size-5" aria-hidden="true" />}
-                title="No applications yet."
-                description="When you start an application, it will appear here with its status."
-              />
+              {recentApplications.length > 0 ? (
+                <ul className="space-y-1">
+                  {recentApplications.map((application) => (
+                    <li key={application.id}>
+                      <Link
+                        href={`/applications/${application.reference}`}
+                        className="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                      >
+                        {application.reference}
+                        <ChevronRight className="size-4 text-muted-foreground" aria-hidden="true" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <EmptyState
+                  compact
+                  icon={<FileText className="size-5" aria-hidden="true" />}
+                  title="No applications yet."
+                  description="When you start an application, it will appear here with its status."
+                />
+              )}
             </CardContent>
           </Card>
         </div>
@@ -102,12 +154,28 @@ export default async function DashboardPage() {
               />
             </CardHeader>
             <CardContent>
-              <EmptyState
-                compact
-                icon={<FolderOpen className="size-5" aria-hidden="true" />}
-                title="No documents yet."
-                description="Your document wallet will live here."
-              />
+              {documents.length > 0 ? (
+                <ul className="space-y-1">
+                  {documents.map((document) => (
+                    <li key={document.id}>
+                      <Link
+                        href={signDocumentUrl(document.id)}
+                        className="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                      >
+                        <span className="truncate">{document.name}</span>
+                        <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <EmptyState
+                  compact
+                  icon={<FolderOpen className="size-5" aria-hidden="true" />}
+                  title="No documents yet."
+                  description="Approved services add certificates to your wallet automatically."
+                />
+              )}
             </CardContent>
           </Card>
 
@@ -116,12 +184,30 @@ export default async function DashboardPage() {
               <SectionHeader title="Upcoming" />
             </CardHeader>
             <CardContent>
-              <EmptyState
-                compact
-                icon={<CalendarDays className="size-5" aria-hidden="true" />}
-                title="Nothing scheduled."
-                description="Renewals and deadlines will show up here."
-              />
+              {expiringSoon.length > 0 ? (
+                <ul className="space-y-1">
+                  {expiringSoon.map((record) => (
+                    <li key={record.id}>
+                      <Link
+                        href={`/records/${record.id}`}
+                        className="flex items-center justify-between gap-3 rounded-md px-2 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                      >
+                        <span className="truncate">{record.serviceName}</span>
+                        <span className="shrink-0 text-xs text-muted-foreground">
+                          {record.expiryDate ? record.expiryDate.toLocaleDateString() : ""}
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <EmptyState
+                  compact
+                  icon={<CalendarDays className="size-5" aria-hidden="true" />}
+                  title="Nothing scheduled."
+                  description="Renewals and deadlines will show up here."
+                />
+              )}
             </CardContent>
           </Card>
 
@@ -130,12 +216,39 @@ export default async function DashboardPage() {
               <SectionHeader title="Recent Activity" />
             </CardHeader>
             <CardContent>
-              <EmptyState
-                compact
-                icon={<Activity className="size-5" aria-hidden="true" />}
-                title="No recent activity."
-                description="Actions you take will appear here."
-              />
+              {timeline.length > 0 ? (
+                <ul className="space-y-1">
+                  {timeline.map((event) => (
+                    <li key={event.id}>
+                      {event.href ? (
+                        <Link
+                          href={event.href}
+                          className="block rounded-md px-2 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                        >
+                          <span className="block truncate">{event.title}</span>
+                          <span className="block truncate text-xs font-normal text-muted-foreground">
+                            {event.createdAt.toLocaleString()}
+                          </span>
+                        </Link>
+                      ) : (
+                        <div className="rounded-md px-2 py-1.5">
+                          <span className="block text-sm font-medium text-foreground">{event.title}</span>
+                          <span className="block text-xs text-muted-foreground">
+                            {event.createdAt.toLocaleString()}
+                          </span>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <EmptyState
+                  compact
+                  icon={<Activity className="size-5" aria-hidden="true" />}
+                  title="No recent activity."
+                  description="Actions you take will appear here."
+                />
+              )}
             </CardContent>
           </Card>
 

@@ -26,7 +26,7 @@ export interface NavItem {
  */
 export const PRIMARY_NAV: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "My Services", href: "/services", icon: Files },
+  { label: "My Services", href: "/services/my", icon: Files },
   { label: "Applications", href: "/applications", icon: FileText },
   { label: "Documents", href: "/documents", icon: FolderOpen },
   { label: "Timeline", href: "/timeline", icon: History },
@@ -44,7 +44,7 @@ export const SECONDARY_NAV: NavItem[] = [
 
 export const MOBILE_NAV: NavItem[] = [
   { label: "Home", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Services", href: "/services", icon: Files },
+  { label: "Services", href: "/services/my", icon: Files },
   { label: "Applications", href: "/applications", icon: FileText },
   { label: "Documents", href: "/documents", icon: FolderOpen },
   { label: "Profile", href: "/profile", icon: User },

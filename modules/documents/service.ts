@@ -8,21 +8,12 @@ import { assertPermission, PERMISSIONS } from "@/server/rbac";
 import { generateId } from "@/lib/id";
 import { timingSafeEqualStrings } from "@/server/crypto";
 import { env } from "@/lib/env";
+import { DOCUMENT_CATEGORIES } from "./labels";
+
+export { DOCUMENT_CATEGORIES };
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_MIME = new Set(["application/pdf", "image/png", "image/jpeg", "image/webp"]);
-
-export const DOCUMENT_CATEGORIES: Array<{ value: DocumentCategory; label: string }> = [
-  { value: "IDENTITY", label: "Identity" },
-  { value: "CERTIFICATES", label: "Certificates" },
-  { value: "LICENCES", label: "Licences" },
-  { value: "BUSINESS", label: "Business" },
-  { value: "TAX", label: "Tax" },
-  { value: "EDUCATION", label: "Education" },
-  { value: "PROPERTY", label: "Property" },
-  { value: "EMPLOYMENT", label: "Employment" },
-  { value: "OTHER", label: "Other" },
-];
 
 export interface WalletDocumentView {
   id: string;

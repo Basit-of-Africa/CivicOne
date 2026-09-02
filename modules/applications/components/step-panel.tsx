@@ -13,6 +13,7 @@ import {
 } from "@/modules/applications/actions";
 import { DynamicForm } from "./dynamic-form";
 import { DocumentUpload, type DocumentItem } from "./document-upload";
+import type { WalletDocumentView } from "@/modules/documents/service";
 import type {
   ApplicationDetailView,
   ApplicationDocumentView,
@@ -30,12 +31,14 @@ export function StepPanel({
   identity,
   documents,
   formDefinitions,
+  walletDocuments,
 }: {
   application: ApplicationDetailView;
   step: WorkflowStepView;
   identity: VerifiedIdentity | null;
   documents: ApplicationDocumentView[];
   formDefinitions: Record<string, FormDefinition>;
+  walletDocuments: WalletDocumentView[];
 }) {
   const router = useRouter();
   const [pending, setPending] = React.useState(false);
@@ -108,6 +111,7 @@ export function StepPanel({
         values={{ ...(application.answers[config.formKey] ?? {}), ...prefill }}
         identity={identity}
         documents={docItems}
+        walletDocuments={walletDocuments}
         onSaved={() => void run(() => advanceStepAction(application.id))}
       />
     );
@@ -138,6 +142,7 @@ export function StepPanel({
                   accept={doc.accept}
                   documents={docItems}
                   attached={attached}
+                  walletDocuments={walletDocuments}
                   onChanged={() => router.refresh()}
                 />
               </div>

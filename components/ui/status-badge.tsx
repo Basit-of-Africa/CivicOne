@@ -21,6 +21,9 @@ const TONE_BY_STATUS: Record<string, "neutral" | "success" | "warning" | "error"
   APPROVED: "success",
   COMPLETED: "success",
   CANCELLED: "neutral",
+  ACTIVE: "success",
+  ARCHIVED: "neutral",
+  EXPIRED: "warning",
 };
 
 export interface StatusBadgeProps {

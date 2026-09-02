@@ -25,6 +25,7 @@ import {
 } from "@/modules/applications/form-config";
 import { saveAnswersAction } from "@/modules/applications/actions";
 import { DocumentUpload, type DocumentItem } from "./document-upload";
+import type { WalletDocumentView } from "@/modules/documents/service";
 
 export function DynamicForm({
   applicationId,
@@ -32,6 +33,7 @@ export function DynamicForm({
   values,
   identity,
   documents,
+  walletDocuments,
   onSaved,
 }: {
   applicationId: string;
@@ -39,6 +41,7 @@ export function DynamicForm({
   values: Record<string, unknown>;
   identity: VerifiedIdentity | null;
   documents: DocumentItem[];
+  walletDocuments?: WalletDocumentView[];
   onSaved: () => void;
 }) {
   const schema = React.useMemo(() => buildFormSchema(definition), [definition]);
@@ -93,6 +96,7 @@ export function DynamicForm({
                 accept={field.accept}
                 documents={documents}
                 attached={value ?? null}
+                walletDocuments={walletDocuments}
                 onChanged={() => setValue(field.key, watch(field.key) as string, { shouldValidate: true })}
               />
             </FormField>
