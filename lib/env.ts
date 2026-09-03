@@ -35,6 +35,12 @@ const envSchema = z.object({
     .min(16, "DOCUMENT_SIGNING_SECRET must be at least 16 characters")
     .default("civicone-demo-document-signing-secret-change-me"),
   DOCUMENT_SIGNED_URL_TTL_SECONDS: z.coerce.number().int().positive().default(300),
+  // Phase 6C — Paystack
+  PAYSTACK_SECRET_KEY: z.string().default(""),
+  PAYSTACK_PUBLIC_KEY: z.string().default(""),
+  PAYSTACK_WEBHOOK_SECRET: z.string().default(""),
+  // Phase 6C — Resend (Email)
+  RESEND_API_KEY: z.string().default(""),
 });
 
 const parsed = envSchema.safeParse(process.env);
