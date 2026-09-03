@@ -16,10 +16,34 @@ export interface TimelineEvent {
 export async function getTimeline(opts?: { limit?: number }): Promise<TimelineEvent[]> {
   const user = await requireUser();
 
-  const identityVerifications = await db.identityVerification.findMany({
-    where: { userId: user.id },
-    orderBy: { verifiedAt: "desc" },
-  });
+  const limit = opts?.limit;
+  // Fetch all four sources in parallel and exclude fileData to avoid
+  // pulling potentially multi-megabyte BYTEA columns into memory.
+  const [identityVerifications, applications, records, documents] = await Promise.all([
+    db.identityVerification.findMany({
+      where: { userId: user.id },
+      orderBy: { verifiedAt: "desc" },
+      ...(limit ? { take: limit * 4 } : {}),
+    }),
+    db.application.findMany({
+      where: { userId: user.id },
+      include: { statusHistory: true },
+      orderBy: { createdAt: "desc" },
+      ...(limit ? { take: limit * 4 } : {}),
+    }),
+    db.governmentServiceRecord.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: "desc" },
+      ...(limit ? { take: limit * 4 } : {}),
+    }),
+    db.walletDocument.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, name: true, createdAt: true },
+      ...(limit ? { take: limit * 4 } : {}),
+    }),
+  ]);
+
   const identityEvents: TimelineEvent[] = identityVerifications.map((v) => ({
     id: `identity-${v.id}`,
     type: "identity",
@@ -29,11 +53,6 @@ export async function getTimeline(opts?: { limit?: number }): Promise<TimelineEv
     href: "/profile/identity",
   }));
 
-  const applications = await db.application.findMany({
-    where: { userId: user.id },
-    include: { statusHistory: true },
-    orderBy: { createdAt: "desc" },
-  });
   const applicationEvents: TimelineEvent[] = applications.flatMap((app) => {
     const events: TimelineEvent[] = [
       {
@@ -67,10 +86,6 @@ export async function getTimeline(opts?: { limit?: number }): Promise<TimelineEv
     return events;
   });
 
-  const records = await db.governmentServiceRecord.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: "desc" },
-  });
   const recordEvents: TimelineEvent[] = records.map((r) => ({
     id: `record-${r.id}`,
     type: "record",
@@ -80,10 +95,6 @@ export async function getTimeline(opts?: { limit?: number }): Promise<TimelineEv
     href: `/records/${r.id}`,
   }));
 
-  const documents = await db.walletDocument.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: "desc" },
-  });
   const documentEvents: TimelineEvent[] = documents.map((d) => ({
     id: `document-${d.id}`,
     type: "document",
@@ -96,5 +107,5 @@ export async function getTimeline(opts?: { limit?: number }): Promise<TimelineEv
   const all = [...identityEvents, ...applicationEvents, ...recordEvents, ...documentEvents].sort(
     (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
   );
-  return opts?.limit ? all.slice(0, opts.limit) : all;
+  return limit ? all.slice(0, limit) : all;
 }

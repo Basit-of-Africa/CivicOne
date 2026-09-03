@@ -35,6 +35,9 @@ export default async function DashboardPage() {
   const firstName = user.firstName ?? "there";
   const greeting = `${getGreeting()}, ${firstName}`;
   const needsEmailVerification = !!user.email && !user.emailVerifiedAt;
+  // identityStatus is already fetched by the (app) layout for the sidebar.
+  // Reuse it here via a separate call — React cache deduplicates within
+  // the same request so this won't cause an extra DB round-trip.
   const identityStatus = await getIdentityStatus();
 
   const [applications, documents, timeline, overview] = await Promise.all([

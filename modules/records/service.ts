@@ -259,7 +259,23 @@ export async function getRecordById(id: string): Promise<RecordDetailView> {
       service: { select: { slug: true, name: true, summary: true } },
       provider: { select: { name: true, abbreviation: true, officialUrl: true } },
       application: { include: { statusHistory: { orderBy: { createdAt: "asc" } } } },
-      documents: { orderBy: { createdAt: "asc" } },
+      documents: {
+        orderBy: { createdAt: "asc" },
+        select: {
+          id: true,
+          category: true,
+          name: true,
+          fileName: true,
+          mimeType: true,
+          sizeBytes: true,
+          issuer: true,
+          issueDate: true,
+          expiryDate: true,
+          verificationStatus: true,
+          source: true,
+          createdAt: true,
+        },
+      },
     },
   });
   if (!record || record.userId !== user.id) {

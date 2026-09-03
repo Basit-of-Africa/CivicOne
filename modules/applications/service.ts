@@ -265,7 +265,19 @@ export async function getApplicationByReference(
         include: { steps: { orderBy: { sortOrder: "asc" }, select: stepSelect } },
       },
       answers: true,
-      documents: { orderBy: { createdAt: "asc" } },
+      documents: {
+        orderBy: { createdAt: "asc" },
+        select: {
+          id: true,
+          formKey: true,
+          fieldKey: true,
+          label: true,
+          fileName: true,
+          mimeType: true,
+          sizeBytes: true,
+          createdAt: true,
+        },
+      },
       statusHistory: { orderBy: { createdAt: "asc" } },
     },
   });

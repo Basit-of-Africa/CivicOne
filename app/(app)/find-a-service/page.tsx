@@ -29,9 +29,9 @@ export default async function FindServicePage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
-  const savedIds = await getSavedServiceIds();
 
-  const [categories, jurisdictions, outcome] = await Promise.all([
+  const [savedIds, categories, jurisdictions, outcome] = await Promise.all([
+    getSavedServiceIds(),
     getServiceCategories(),
     getJurisdictionOptions(),
     searchServicesWithIntent({

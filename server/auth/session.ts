@@ -149,10 +149,6 @@ export async function getSessionUser(): Promise<SessionUser | null> {
         },
       })
       .catch(() => {});
-  } else if (now.getTime() - session.lastActiveAt.getTime() > 60_000) {
-    await db.session
-      .update({ where: { id: session.id }, data: { lastActiveAt: now } })
-      .catch(() => {});
   }
 
   return toSessionUser(session.user);
