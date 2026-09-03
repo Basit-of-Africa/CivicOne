@@ -78,7 +78,7 @@ export function MobileHeader({ firstName, lastName, email, identityStatus, unrea
               <DrawerCloseButton />
             </DrawerHeader>
             <div className="flex-1 overflow-y-auto py-4">
-              <NavList onNavigate={() => setNavOpen(false)} />
+              <NavList onNavigate={() => setNavOpen(false)} unreadNotifications={unreadNotifications} />
               <div className="px-3 pb-2">
                 <IdentityStatusIndicator status={identityStatus} />
               </div>
@@ -88,7 +88,22 @@ export function MobileHeader({ firstName, lastName, email, identityStatus, unrea
         <Logo href="/dashboard" size="sm" />
       </div>
 
-      <DropdownMenu>
+      <div className="flex items-center gap-2">
+        {/* Phase 6C: Notification bell */}
+        <Link
+          href="/notifications"
+          className="relative rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          aria-label={`Notifications${unreadNotifications > 0 ? ` (${unreadNotifications} unread)` : ""}`}
+        >
+          <Bell className="size-5" aria-hidden="true" />
+          {unreadNotifications > 0 ? (
+            <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+              {unreadNotifications > 9 ? "9+" : unreadNotifications}
+            </span>
+          ) : null}
+        </Link>
+
+        <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
             type="button"
