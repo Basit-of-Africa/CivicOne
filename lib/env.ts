@@ -41,6 +41,8 @@ const envSchema = z.object({
   PAYSTACK_WEBHOOK_SECRET: z.string().default(""),
   // Phase 6C — Resend (Email)
   RESEND_API_KEY: z.string().default(""),
+  // Vercel Cron Jobs — used to authenticate cron requests
+  CRON_SECRET: z.string().default(""),
 });
 
 const parsed = envSchema.safeParse(process.env);
