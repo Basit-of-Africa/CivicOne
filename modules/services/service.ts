@@ -32,13 +32,15 @@ export interface ServiceDetailView extends ServiceCardView {
   description: string;
   eligibility: string | null;
   officialUrl: string | null;
+  agencyUrl: string | null;
+  agencyLabel: string | null;
   requirements: Array<{
     title: string;
     description: string | null;
     isDocument: boolean;
     isVerified: boolean;
   }>;
-  fees: Array<{ name: string; frequency: string | null; note: string | null }>;
+  fees: Array<{ name: string; amount: number | null; currency: string; frequency: string | null; note: string | null }>;
   faqs: Array<{ question: string; answer: string }>;
   related: ServiceCardView[];
   steps: Array<{ title: string; description: string }>;
@@ -209,8 +211,10 @@ export async function getServiceBySlug(
       description: true,
       eligibility: true,
       officialUrl: true,
+      agencyUrl: true,
+      agencyLabel: true,
       requirements: { orderBy: { sortOrder: "asc" }, select: { title: true, description: true, isDocument: true, isVerified: true } },
-      fees: { orderBy: { sortOrder: "asc" }, select: { name: true, frequency: true, note: true } },
+      fees: { orderBy: { sortOrder: "asc" }, select: { name: true, amount: true, currency: true, frequency: true, note: true } },
       faqs: { orderBy: { sortOrder: "asc" }, select: { question: true, answer: true } },
       steps: { orderBy: { sortOrder: "asc" }, select: { title: true, description: true } },
       relatedFrom: {
@@ -226,6 +230,8 @@ export async function getServiceBySlug(
     description: row.description,
     eligibility: row.eligibility,
     officialUrl: row.officialUrl,
+    agencyUrl: row.agencyUrl,
+    agencyLabel: row.agencyLabel,
     requirements: row.requirements,
     fees: row.fees,
     faqs: row.faqs,
@@ -317,4 +323,73 @@ export async function getSavedServices(): Promise<ServiceCardView[]> {
     orderBy: { createdAt: "desc" },
   });
   return rows.map((r) => toCard(r.service));
+}
+
+// ---------------------------------------------------------------------------
+// Phase 6A — Analytics tracking
+// ---------------------------------------------------------------------------
+
+export async function trackServiceAction(
+  serviceId: string,
+  action: string,
+  metadata?: Record<string, unknown>,
+): Promise<void> {
+  const user = await requireUser();
+
+  // Fire-and-forget — don't block the UI
+  try {
+    await db.serviceAnalytics.create({
+      data: {
+        id: generateId("sa"),
+        userId: user.id,
+        serviceId,
+        action,
+        metadata: metadata ?? undefined,
+      },
+    });
+  } catch {
+    // Silently ignore analytics failures — they should never block the user
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Phase 6A — Office locations
+// ---------------------------------------------------------------------------
+
+export interface OfficeLocationView {
+  id: string;
+  agency: string;
+  name: string;
+  state: string;
+  lga: string | null;
+  address: string;
+  latitude: number | null;
+  longitude: number | null;
+  phone: string | null;
+  email: string | null;
+  hours: string | null;
+  isHeadquarters: boolean;
+}
+
+export async function getOfficeLocationsByAgency(
+  agency: string,
+): Promise<OfficeLocationView[]> {
+  const offices = await db.officeLocation.findMany({
+    where: { agency },
+    orderBy: [{ isHeadquarters: "desc" }, { state: "asc" }],
+  });
+  return offices.map((o) => ({
+    id: o.id,
+    agency: o.agency,
+    name: o.name,
+    state: o.state,
+    lga: o.lga,
+    address: o.address,
+    latitude: o.latitude,
+    longitude: o.longitude,
+    phone: o.phone,
+    email: o.email,
+    hours: o.hours,
+    isHeadquarters: o.isHeadquarters,
+  }));
 }
