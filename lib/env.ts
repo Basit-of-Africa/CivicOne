@@ -3,7 +3,7 @@ import { z } from "zod";
 
 const envSchema = z.object({
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
-  APP_URL: z.string().url().default("http://localhost:3000"),
+  APP_URL: z.string().default("http://localhost:3000"),
   APP_NAME: z.string().default("CivicOne Nigeria"),
   EMAIL_FROM: z.string().default("no-reply@civicone.ng"),
   SESSION_COOKIE_NAME: z.string().default("civone_session"),
