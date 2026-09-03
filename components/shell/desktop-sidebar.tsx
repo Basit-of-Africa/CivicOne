@@ -97,6 +97,11 @@ function NavList({ onNavigate, unreadNotifications }: { onNavigate?: () => void;
                     aria-hidden="true"
                   />
                   {item.label}
+                  {showBadge ? (
+                    <span className="ml-auto flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                      {unreadNotifications > 9 ? "9+" : unreadNotifications}
+                    </span>
+                  ) : null}
                 </Link>
               </li>
             );
@@ -188,7 +193,7 @@ export function DesktopSidebar(props: DesktopSidebarProps) {
       <div className="flex h-16 items-center border-b border-border px-4">
         <Logo href="/dashboard" />
       </div>
-      <NavList />
+      <NavList unreadNotifications={props.unreadNotifications} />
       <div className="space-y-2 border-t border-border p-3">
         <IdentityStatusIndicator status={props.identityStatus} />
         <UserMenu {...props} />
