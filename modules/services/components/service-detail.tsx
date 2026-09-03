@@ -58,13 +58,13 @@ export function ServiceDetail({
             <StartApplicationButton serviceId={service.id} />
           ) : null}
           <SaveServiceButton serviceId={service.id} saved={saved} />
-          {service.mode === "EXTERNAL" && service.officialUrl ? (
-            <Button asChild>
-              <a href={service.officialUrl} target="_blank" rel="noreferrer">
-                Go to official site
-                <ExternalLink aria-hidden="true" />
-              </a>
-            </Button>
+          {/* Phase 6A: Agency link button (replaces plain "Go to official site") */}
+          {service.mode === "EXTERNAL" && (service.agencyUrl || service.officialUrl) ? (
+            <AgencyLinkButton
+              serviceId={service.id}
+              agencyUrl={service.agencyUrl || service.officialUrl!}
+              agencyLabel={service.agencyLabel}
+            />
           ) : null}
           {service.mode === "INTEGRATED" ? (
             <Button disabled>
