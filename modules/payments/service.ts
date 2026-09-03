@@ -108,7 +108,7 @@ export async function verifyPayment(
   if (!env.PAYSTACK_SECRET_KEY) {
     throw new AppError(
       "Payment is not configured.",
-      { code: "NOT_IMPLEMENTED" },
+      { code: "INTERNAL" },
     );
   }
 
