@@ -783,3 +783,166 @@ export async function getApplicationDocument(
     fileData: document.fileData,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Phase 6B — User-reported progress tracking
+// ---------------------------------------------------------------------------
+
+export async function reportProgress(
+  applicationId: string,
+  status: string,
+  note?: string,
+): Promise<void> {
+  const user = await requireUser();
+  assertPermission(user.roleNames, PERMISSIONS.APPLICATIONS_SELF);
+  const application = await getOwnedApplication(applicationId, user);
+
+  // Only allow progress reports for applications that are submitted or beyond
+  if (["DRAFT", "READY", "PAYMENT_PENDING"].includes(application.status)) {
+    throw new AppError(
+      "You can only report progress for submitted applications.",
+      { code: "CONFLICT" },
+    );
+  }
+
+  // Don't allow progress reports on terminal states
+  if (["APPROVED", "REJECTED", "COMPLETED", "CANCELLED"].includes(application.status)) {
+    throw new AppError(
+      "This application has already reached a final status.",
+      { code: "CONFLICT" },
+    );
+  }
+
+  const ctx = await getRequestContext();
+
+  // Create a status history entry
+  await db.applicationStatusHistory.create({
+    data: {
+      id: generateId("ash"),
+      applicationId: application.id,
+      fromStatus: application.status as ApplicationStatus,
+      toStatus: status as ApplicationStatus,
+      reason: note ?? `User reported: ${status}`,
+      actorUserId: user.id,
+    },
+  });
+
+  // Update the application status
+  await db.application.update({
+    where: { id: applicationId },
+    data: { status: status as ApplicationStatus },
+  });
+
+  await logAudit({
+    actorId: user.id,
+    action: "application.progress_reported",
+    resourceType: "application",
+    resourceId: applicationId,
+    metadata: { status, note },
+    ipAddress: ctx.ipAddress,
+    userAgent: ctx.userAgent,
+  });
+}
+
+export interface ProgressUpdateView {
+  id: string;
+  status: string;
+  note: string | null;
+  documentName: string | null;
+  createdAt: Date;
+}
+
+export async function getApplicationProgressUpdates(
+  applicationId: string,
+): Promise<ProgressUpdateView[]> {
+  const user = await requireUser();
+  const application = await getOwnedApplication(applicationId, user);
+
+  const updates = await db.applicationStatusHistory.findMany({
+    where: {
+      applicationId: application.id,
+      actorUserId: user.id,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return updates.map((u) => ({
+    id: u.id,
+    status: u.toStatus,
+    note: u.reason,
+    documentName: null,
+    createdAt: u.createdAt,
+  }));
+}
+
+// ---------------------------------------------------------------------------
+// Phase 6B — Application analytics
+// ---------------------------------------------------------------------------
+
+export interface ApplicationAnalyticsView {
+  totalApplications: number;
+  activeApplications: number;
+  completedApplications: number;
+  rejectedApplications: number;
+  totalDocuments: number;
+  recentActivity: Array<{
+    id: string;
+    reference: string;
+    serviceName: string;
+    status: string;
+    updatedAt: Date;
+  }>;
+}
+
+export async function getApplicationAnalytics(): Promise<ApplicationAnalyticsView> {
+  const user = await requireUser();
+
+  const [total, active, completed, rejected, documents, recent] = await Promise.all([
+    db.application.count({ where: { userId: user.id } }),
+    db.application.count({
+      where: {
+        userId: user.id,
+        status: { in: ["SUBMITTED", "UNDER_REVIEW", "ACTION_REQUIRED"] },
+      },
+    }),
+    db.application.count({
+      where: {
+        userId: user.id,
+        status: { in: ["APPROVED", "COMPLETED"] },
+      },
+    }),
+    db.application.count({
+      where: { userId: user.id, status: "REJECTED" },
+    }),
+    db.applicationDocument.count({
+      where: { application: { userId: user.id } },
+    }),
+    db.application.findMany({
+      where: { userId: user.id },
+      select: {
+        id: true,
+        reference: true,
+        serviceName: true,
+        status: true,
+        updatedAt: true,
+      },
+      orderBy: { updatedAt: "desc" },
+      take: 5,
+    }),
+  ]);
+
+  return {
+    totalApplications: total,
+    activeApplications: active,
+    completedApplications: completed,
+    rejectedApplications: rejected,
+    totalDocuments: documents,
+    recentActivity: recent.map((r) => ({
+      id: r.id,
+      reference: r.reference,
+      serviceName: r.serviceName,
+      status: r.status,
+      updatedAt: r.updatedAt,
+    })),
+  };
+}
