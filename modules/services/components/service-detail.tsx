@@ -14,11 +14,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { ServiceDetailView } from "@/modules/services/service";
+import type { OfficeLocationView } from "@/modules/services/service";
 import { SaveServiceButton } from "./save-service-button";
 import { ServiceFaq } from "./service-faq";
 import { MODE_LABELS } from "./service-card";
 import { StartApplicationButton } from "@/modules/applications/components/start-application-button";
 import { TRUST_DISCLAIMER } from "@/lib/constants";
+// Phase 6A — New components
+import { ServiceChecklist } from "./service-checklist";
+import { ServiceGuide } from "./service-guide";
+import { OfficeLocator } from "./office-locator";
+import { AgencyLinkButton } from "./agency-link-button";
+import { FeeCalculator } from "./fee-calculator";
 
 const DEMO_NOTE = "Demo information. Confirm current requirements with the official provider.";
 const FEE_NOTE = "Verify current fee with official provider.";
@@ -27,10 +34,12 @@ export function ServiceDetail({
   service,
   saved,
   workflowAvailable,
+  offices,
 }: {
   service: ServiceDetailView;
   saved: boolean;
   workflowAvailable: boolean;
+  offices?: OfficeLocationView[];
 }) {
   return (
     <div className="space-y-6">
