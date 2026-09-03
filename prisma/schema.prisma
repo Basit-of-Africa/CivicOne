@@ -45,6 +45,8 @@ model User {
   applications       Application[]
   records            GovernmentServiceRecord[]
   walletDocuments    WalletDocument[]
+  serviceAnalytics   ServiceAnalytics[]
+  notifications      Notification[]
 
   @@map("users")
 }
@@ -422,6 +424,8 @@ model Service {
   eligibility      String?     @db.Text
   estimatedTime    String?     @map("estimated_time") @db.VarChar(120)
   officialUrl      String?     @map("official_url") @db.VarChar(512)
+  agencyUrl        String?     @map("agency_url") @db.VarChar(512) // Phase 6: redirect URL for agency portal
+  agencyLabel      String?     @map("agency_label") @db.VarChar(80) // Phase 6: button label e.g. "Open on CAC Portal"
   searchText       String      @default("") @map("search_text") @db.Text
   isDemo           Boolean     @default(true) @map("is_demo")
   isActive         Boolean     @default(true) @map("is_active")
@@ -441,6 +445,7 @@ model Service {
   workflow     ServiceWorkflow?
   applications Application[]
   records      GovernmentServiceRecord[]
+  analytics    ServiceAnalytics[]
 
   @@index([categoryId])
   @@index([providerId])
@@ -773,4 +778,66 @@ model WalletDocument {
   @@index([category])
   @@index([recordId])
   @@map("wallet_documents")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 6A — Office locations, service analytics
+// ---------------------------------------------------------------------------
+
+model OfficeLocation {
+  id          String   @id @db.VarChar(64)
+  agency      String   @db.VarChar(64) // CAC, NIMC, FRSC, NIS, FIRS, NPC, etc.
+  name        String   @db.VarChar(200)
+  state       String   @db.VarChar(80)
+  lga         String?  @db.VarChar(80)
+  address     String   @db.VarChar(500)
+  latitude    Float?
+  longitude   Float?
+  phone       String?  @db.VarChar(32)
+  email       String?  @db.VarChar(320)
+  hours       String?  @db.VarChar(200) // e.g. "Mon-Fri 8am-4pm"
+  isHeadquarters Boolean @default(false) @map("is_headquarters")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([agency])
+  @@index([state])
+  @@map("office_locations")
+}
+
+model ServiceAnalytics {
+  id          String   @id @db.VarChar(64)
+  userId      String   @map("user_id") @db.VarChar(64)
+  serviceId   String   @map("service_id") @db.VarChar(64)
+  action      String   @db.VarChar(32) // view, checklist, guide, agency_click, start
+  metadata    Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([serviceId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("service_analytics")
+}
+
+// ---------------------------------------------------------------------------
+// Phase 6C — Notifications
+// ---------------------------------------------------------------------------
+
+model Notification {
+  id          String    @id @db.VarChar(64)
+  userId      String    @map("user_id") @db.VarChar(64)
+  type        String    @db.VarChar(32) // application, document, payment, system
+  title       String    @db.VarChar(200)
+  body        String    @db.VarChar(1000)
+  link        String?   @db.VarChar(512)
+  readAt      DateTime? @map("read_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@map("notifications")
 }
