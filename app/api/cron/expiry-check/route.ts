@@ -16,8 +16,8 @@ export async function GET(request: Request) {
   }
 
   try {
-    const result = await checkExpiringRecords();
-    return NextResponse.json({ ok: true, ...result });
+    const count = await checkExpiringRecords();
+    return NextResponse.json({ ok: true, notificationsCreated: count });
   } catch (error) {
     console.error("[cron/expiry-check] Failed:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
