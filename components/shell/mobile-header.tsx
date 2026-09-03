@@ -147,6 +147,7 @@ export function MobileHeader({ firstName, lastName, email, identityStatus, unrea
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      </div>
     </header>
   );
 }
