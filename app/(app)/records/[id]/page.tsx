@@ -162,6 +162,11 @@ export default async function RecordDetailPage({ params }: { params: Promise<{ i
         </CardContent>
       </Card>
 
+      {/* QR Verification Card */}
+      {record.verificationToken ? (
+        <VerificationCard token={record.verificationToken} />
+      ) : null}
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
@@ -226,5 +231,66 @@ export default async function RecordDetailPage({ params }: { params: Promise<{ i
         </Card>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * Server component that renders a QR code for certificate verification.
+ * The QR code links to the public verification page.
+ */
+async function VerificationCard({ token }: { token: string }) {
+  const verificationUrl = getVerificationUrl(token);
+
+  let qrSvg = "";
+  try {
+    qrSvg = await QRCodeLib.toString(verificationUrl, {
+      type: "svg",
+      width: 160,
+      margin: 1,
+      color: { dark: "#172b4d", light: "#ffffff" },
+      errorCorrectionLevel: "M",
+    });
+  } catch {
+    // Fallback: show the URL as text if QR generation fails
+    qrSvg = "";
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <QrCode className="size-4 text-secondary" aria-hidden="true" />
+          Verify this certificate
+        </CardTitle>
+        <CardDescription>
+          Anyone can scan this QR code to verify the authenticity of this certificate.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
+          {qrSvg ? (
+            <div
+              className="shrink-0 rounded-md border border-border bg-white p-3"
+              dangerouslySetInnerHTML={{ __html: qrSvg }}
+            />
+          ) : (
+            <div className="flex size-[166px] shrink-0 items-center justify-center rounded-md border border-border bg-muted text-xs text-muted-foreground">
+              QR code unavailable
+            </div>
+          )}
+          <div className="flex-1 space-y-2 text-center sm:text-left">
+            <p className="text-sm text-muted-foreground">
+              Scan with your phone camera or a QR code reader to verify this certificate on the CivicOne verification page.
+            </p>
+            <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-2">
+              <code className="flex-1 truncate text-xs text-foreground">{verificationUrl}</code>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Verification powered by <span className="font-medium text-foreground">CivicOne Nigeria</span>
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
