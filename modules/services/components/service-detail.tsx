@@ -3,11 +3,8 @@ import {
   ArrowRight,
   Clock,
   ExternalLink,
-  FileText,
   Fingerprint,
   Landmark,
-  ListChecks,
-  ListOrdered,
   ScrollText,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -134,92 +131,43 @@ export function ServiceDetail({
         </Card>
       ) : null}
 
+      {/* Phase 6A: Requirements → Personalized Checklist */}
       {service.requirements.length > 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <ListChecks className="size-4 text-secondary" aria-hidden="true" />
-              Requirements & documents
-            </CardTitle>
-            <CardDescription>What you will typically need to provide.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              {service.requirements.map((req, index) => (
-                <div key={index} className="flex items-start gap-3 rounded-md border border-border bg-card px-4 py-3">
-                  <FileText className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-foreground">
-                      {req.title}
-                      {req.isDocument ? (
-                        <span className="ml-2 rounded-sm bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
-                          Document
-                        </span>
-                      ) : null}
-                    </p>
-                    {req.description ? (
-                      <p className="mt-0.5 text-xs text-muted-foreground">{req.description}</p>
-                    ) : null}
-                    {!req.isVerified ? (
-                      <p className="mt-1 text-xs font-medium text-warning">{DEMO_NOTE}</p>
-                    ) : null}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <ServiceChecklist
+          serviceId={service.id}
+          serviceName={service.name}
+          requirements={service.requirements.map((req, index) => ({
+            id: `req-${index}`,
+            title: req.title,
+            description: req.description,
+            isDocument: req.isDocument,
+            isVerified: req.isVerified,
+          }))}
+        />
       ) : null}
 
+      {/* Phase 6A: Steps → Enhanced Guide */}
       {service.steps.length > 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <ListOrdered className="size-4 text-secondary" aria-hidden="true" />
-              Steps
-            </CardTitle>
-            <CardDescription>How the process typically works.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ol className="space-y-4">
-              {service.steps.map((step, index) => (
-                <li key={index} className="flex gap-3">
-                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-                    {index + 1}
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground">{step.title}</p>
-                    {step.description ? (
-                      <p className="mt-0.5 text-sm text-muted-foreground">{step.description}</p>
-                    ) : null}
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </CardContent>
-        </Card>
+        <ServiceGuide
+          serviceName={service.name}
+          providerName={service.providerName}
+          steps={service.steps}
+        />
+      ) : null}
       ) : null}
 
+      {/* Phase 6A: Fees → Fee Calculator */}
       {service.fees.length > 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Fees</CardTitle>
-            <CardDescription>Fees are not fixed here — always confirm with the provider.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {service.fees.map((fee, index) => (
-              <div key={index} className="flex items-center justify-between gap-3 rounded-md border border-border bg-card px-4 py-3">
-                <div>
-                  <p className="text-sm font-medium text-foreground">{fee.name}</p>
-                  {fee.frequency ? (
-                    <p className="text-xs text-muted-foreground">{fee.frequency}</p>
-                  ) : null}
-                </div>
-                <p className="text-xs font-medium text-warning">{FEE_NOTE}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <FeeCalculator
+          serviceName={service.name}
+          fees={service.fees.map((fee) => ({
+            name: fee.name,
+            amount: fee.amount,
+            currency: fee.currency,
+            frequency: fee.frequency,
+            note: fee.note,
+          }))}
+        />
       ) : null}
 
       <Card>
@@ -248,6 +196,14 @@ export function ServiceDetail({
           <p className="mt-3 text-xs text-muted-foreground">{TRUST_DISCLAIMER}</p>
         </CardContent>
       </Card>
+
+      {/* Phase 6A: Office Locator */}
+      {offices && offices.length > 0 ? (
+        <OfficeLocator
+          providerName={service.providerName}
+          offices={offices}
+        />
+      ) : null}
 
       {service.faqs.length > 0 ? (
         <Card>
