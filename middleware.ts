@@ -12,7 +12,7 @@ import { NextRequest, NextResponse } from "next/server";
 const SESSION_COOKIE = process.env.SESSION_COOKIE_NAME ?? "civone_session";
 
 const AUTH_PREFIXES = ["/auth"];
-const PUBLIC_PREFIXES = ["/about", "/terms"];
+const PUBLIC_PREFIXES = ["/about", "/terms", "/verify"];
 const API_PREFIXES = ["/api/"];
 
 function isPublicPath(pathname: string): boolean {

@@ -1,3 +1,5 @@
+import QRCode from "qrcode";
+
 function asciiSafe(value: string): string {
   return value.replace(/[^\x20-\x7E]/g, " ");
 }
@@ -6,12 +8,41 @@ function escapePdfText(value: string): string {
   return value.replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
 }
 
-export function buildCertificatePdf(opts: {
+/**
+ * Build PDF graphics commands that render a QR code as vector rectangles.
+ * Returns an array of PDF content stream lines.
+ */
+function buildQrGraphics(qrData: QRCode.QRCode, x: number, y: number, size: number): string[] {
+  const modules = qrData.modules;
+  const count = modules.size;
+  const moduleSize = size / count;
+  const lines: string[] = [];
+
+  // Start a new path for all black modules
+  lines.push("0 0 0 rg"); // black fill color
+  for (let row = 0; row < count; row++) {
+    for (let col = 0; col < count; col++) {
+      if (modules.get(row, col)) {
+        const rx = x + col * moduleSize;
+        // PDF y-axis is bottom-up; invert row
+        const ry = y + size - (row + 1) * moduleSize;
+        lines.push(`${rx.toFixed(2)} ${ry.toFixed(2)} ${moduleSize.toFixed(2)} ${moduleSize.toFixed(2)} re f`);
+      }
+    }
+  }
+  return lines;
+}
+
+export interface CertificatePdfOptions {
   title: string;
   subtitle: string;
   lines: Array<[string, string]>;
   footer: string;
-}): Buffer {
+  /** Optional verification URL — renders a QR code on the certificate. */
+  verificationUrl?: string;
+}
+
+export function buildCertificatePdf(opts: CertificatePdfOptions): Buffer {
   const streamLines: string[] = [];
   streamLines.push(`BT /F1 22 Tf 72 740 Td (${escapePdfText(asciiSafe(opts.title))}) Tj ET`);
   streamLines.push(`BT /F1 11 Tf 72 716 Td (${escapePdfText(asciiSafe(opts.subtitle))}) Tj ET`);
@@ -21,7 +52,26 @@ export function buildCertificatePdf(opts: {
     streamLines.push(`BT /F1 11 Tf 72 ${y} Td (${escapePdfText(asciiSafe(`${label}: ${value}`))}) Tj ET`);
     y -= 26;
   }
-  streamLines.push(`BT /F1 8 Tf 72 60 Td (${escapePdfText(asciiSafe(opts.footer))}) Tj ET`);
+
+  // QR code in bottom-right corner
+  const qrSize = 80;
+  const qrX = 612 - 72 - qrSize; // right-aligned with 72pt margin
+  const qrY = 36; // near bottom
+
+  if (opts.verificationUrl) {
+    const qrData = QRCode.create(opts.verificationUrl, { errorCorrectionLevel: "M" });
+    const qrLines = buildQrGraphics(qrData, qrX, qrY, qrSize);
+    streamLines.push(...qrLines);
+
+    // Label under QR code
+    streamLines.push(`BT /F1 7 Tf ${qrX} ${qrY - 12} Td (${escapePdfText("Scan to verify")}) Tj ET`);
+
+    // Footer wraps around QR area — place it to the left of the QR
+    streamLines.push(`BT /F1 8 Tf 72 60 Td (${escapePdfText(asciiSafe(opts.footer))}) Tj ET`);
+  } else {
+    streamLines.push(`BT /F1 8 Tf 72 60 Td (${escapePdfText(asciiSafe(opts.footer))}) Tj ET`);
+  }
+
   const stream = streamLines.join("\n");
 
   const objects: string[] = [
