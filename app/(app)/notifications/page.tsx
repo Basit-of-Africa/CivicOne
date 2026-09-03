@@ -3,16 +3,13 @@ import Link from "next/link";
 import {
   ArrowRight,
   Bell,
-  CheckCircle2,
   CreditCard,
   FileText,
   FolderOpen,
-  Settings,
 } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { getNotifications } from "@/modules/notifications/service";
 import { MarkAllReadButton } from "@/modules/notifications/components/mark-all-read-button";
 import { NotificationItem } from "@/modules/notifications/components/notification-item";
