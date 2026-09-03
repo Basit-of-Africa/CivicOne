@@ -1,10 +1,12 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogOut, Menu, Settings, UserRound } from "lucide-react";
+import { Bell, LogOut, Menu, Settings, UserRound } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { Avatar } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,13 +33,14 @@ export interface MobileHeaderProps {
   lastName: string | null;
   email: string | null;
   identityStatus: IdentityStatusView;
+  unreadNotifications: number;
 }
 
 /**
  * Mobile top bar: logo, navigation drawer trigger and account menu.
  * Visible below lg breakpoint only.
  */
-export function MobileHeader({ firstName, lastName, email, identityStatus }: MobileHeaderProps) {
+export function MobileHeader({ firstName, lastName, email, identityStatus, unreadNotifications }: MobileHeaderProps) {
   const router = useRouter();
   const [pending, setPending] = React.useState(false);
   const [navOpen, setNavOpen] = React.useState(false);
