@@ -24,9 +24,6 @@ import { OfficeLocator } from "./office-locator";
 import { AgencyLinkButton } from "./agency-link-button";
 import { FeeCalculator } from "./fee-calculator";
 
-const DEMO_NOTE = "Demo information. Confirm current requirements with the official provider.";
-const FEE_NOTE = "Verify current fee with official provider.";
-
 export function ServiceDetail({
   service,
   saved,
