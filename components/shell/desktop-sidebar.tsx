@@ -31,9 +31,10 @@ export interface DesktopSidebarProps {
   lastName: string | null;
   email: string | null;
   identityStatus: IdentityStatusView;
+  unreadNotifications: number;
 }
 
-function NavList({ onNavigate }: { onNavigate?: () => void }) {
+function NavList({ onNavigate, unreadNotifications }: { onNavigate?: () => void; unreadNotifications?: number }) {
   const pathname = usePathname();
   return (
     <nav aria-label="Primary navigation" className="flex-1 space-y-6 overflow-y-auto px-3">
@@ -74,6 +75,7 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
         <ul className="space-y-1">
           {SECONDARY_NAV.map((item) => {
             const active = isNavItemActive(pathname, item.href);
+            const showBadge = item.href === "/notifications" && unreadNotifications && unreadNotifications > 0;
             return (
               <li key={item.href}>
                 <Link
