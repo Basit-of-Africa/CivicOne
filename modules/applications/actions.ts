@@ -124,3 +124,19 @@ export async function reuseWalletDocumentAction(input: {
     ),
   );
 }
+
+// ---------------------------------------------------------------------------
+// Phase 6B — User-reported progress tracking
+// ---------------------------------------------------------------------------
+
+import { reportProgress } from "./service";
+
+export async function reportApplicationProgress(
+  applicationId: string,
+  status: string,
+  note?: string,
+) {
+  const parsed = applicationIdSchema.safeParse({ applicationId });
+  if (!parsed.success) return fail(validationError(toFieldErrors(parsed.error)));
+  return withActionResult(() => reportProgress(applicationId, status, note));
+}
