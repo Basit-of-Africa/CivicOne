@@ -9,8 +9,6 @@ import { NextRequest, NextResponse } from "next/server";
  * away from auth pages, based on the presence of the session cookie.
  */
 
-const SESSION_COOKIE = process.env.SESSION_COOKIE_NAME ?? "civone_session";
-
 const AUTH_PREFIXES = ["/auth"];
 const PUBLIC_PREFIXES = ["/about", "/terms", "/verify"];
 const API_PREFIXES = ["/api/"];
@@ -24,6 +22,7 @@ function isPublicPath(pathname: string): boolean {
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const SESSION_COOKIE = process.env.SESSION_COOKIE_NAME ?? "civone_session";
   const hasSession = request.cookies.has(SESSION_COOKIE);
 
   if (!hasSession && !isPublicPath(pathname)) {
