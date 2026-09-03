@@ -151,7 +151,6 @@ export function ServiceDetail({
           steps={service.steps}
         />
       ) : null}
-      ) : null}
 
       {/* Phase 6A: Fees → Fee Calculator */}
       {service.fees.length > 0 ? (
