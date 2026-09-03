@@ -233,7 +233,13 @@ export async function getServiceBySlug(
     agencyUrl: row.agencyUrl,
     agencyLabel: row.agencyLabel,
     requirements: row.requirements,
-    fees: row.fees,
+    fees: row.fees.map((f) => ({
+      name: f.name,
+      amount: f.amount != null ? Number(f.amount) : null,
+      currency: f.currency,
+      frequency: f.frequency,
+      note: f.note,
+    })),
     faqs: row.faqs,
     steps: row.steps,
     related: row.relatedFrom.map((r) => toCard(r.related)),
@@ -344,7 +350,7 @@ export async function trackServiceAction(
         userId: user.id,
         serviceId,
         action,
-        metadata: metadata ?? undefined,
+        metadata: metadata ? JSON.parse(JSON.stringify(metadata)) : undefined,
       },
     });
   } catch {
