@@ -20,7 +20,7 @@ export function HeroSearch() {
   }
 
   return (
-    <div className="w-full max-w-2xl space-y-3">
+    <div className="mx-auto w-full max-w-2xl space-y-3">
       <form
         role="search"
         className="relative"
