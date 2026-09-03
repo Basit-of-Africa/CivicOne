@@ -80,7 +80,7 @@ async function issueEmailVerification(userId: string, email: string) {
       expiresAt,
     },
   });
-  const url = `${env.APP_URL}/auth/verify-email?token=${token}`;
+  const url = `${env.APP_URL || "http://localhost:3000"}/auth/verify-email?token=${token}`;
   await sendEmail({
     to: email,
     subject: "Verify your email address",
@@ -364,7 +364,7 @@ export async function requestPasswordReset(
         expiresAt,
       },
     });
-    const url = `${env.APP_URL}/auth/reset-password?token=${token}`;
+    const url = `${env.APP_URL || "http://localhost:3000"}/auth/reset-password?token=${token}`;
     await sendEmail({
       to: user.email,
       subject: "Reset your CivicOne password",

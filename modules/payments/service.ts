@@ -55,7 +55,7 @@ export async function initializePayment(
       email: input.email,
       amount: input.amount * 100, // Paystack expects amount in kobo
       reference,
-      callback_url: `${env.APP_URL}/api/webhooks/paystack`,
+      callback_url: `${env.APP_URL || "http://localhost:3000"}/api/webhooks/paystack`,
       metadata: {
         application_id: input.applicationId,
         user_id: user.id,

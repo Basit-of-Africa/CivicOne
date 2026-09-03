@@ -61,7 +61,7 @@ export async function sendVerificationEmail(
   to: string,
   token: string,
 ): Promise<void> {
-  const verifyUrl = `${env.APP_URL}/auth/verify-email?token=${token}`;
+  const verifyUrl = `${env.APP_URL || "http://localhost:3000"}/auth/verify-email?token=${token}`;
   await sendEmail({
     to,
     subject: "Verify your CivicOne account",
@@ -87,7 +87,7 @@ export async function sendPasswordResetEmail(
   to: string,
   token: string,
 ): Promise<void> {
-  const resetUrl = `${env.APP_URL}/auth/reset-password?token=${token}`;
+  const resetUrl = `${env.APP_URL || "http://localhost:3000"}/auth/reset-password?token=${token}`;
   await sendEmail({
     to,
     subject: "Reset your CivicOne password",
@@ -115,7 +115,7 @@ export async function sendApplicationStatusEmail(
   serviceName: string,
   status: string,
 ): Promise<void> {
-  const appUrl = `${env.APP_URL}/applications/${reference}`;
+  const appUrl = `${env.APP_URL || "http://localhost:3000"}/applications/${reference}`;
   const statusText = status.replace(/_/g, " ").toLowerCase();
   await sendEmail({
     to,

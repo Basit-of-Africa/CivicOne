@@ -80,7 +80,9 @@ export function verifyVerificationToken(token: string): QrPayload | null {
 
 /**
  * Build the full verification URL for a given token.
+ * Falls back to localhost if APP_URL is not configured (e.g. during build).
  */
 export function getVerificationUrl(token: string): string {
-  return `${env.APP_URL}/verify/${token}`;
+  const baseUrl = env.APP_URL || "http://localhost:3000";
+  return `${baseUrl}/verify/${token}`;
 }
