@@ -69,7 +69,7 @@ export async function initializePayment(
   if (!data.status) {
     throw new AppError(
       data.message ?? "Failed to initialize payment.",
-      { code: "PAYMENT_FAILED" },
+      { code: "INTERNAL" },
     );
   }
 
