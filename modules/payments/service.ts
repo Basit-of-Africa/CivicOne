@@ -126,7 +126,7 @@ export async function verifyPayment(
   if (!data.status) {
     throw new AppError(
       data.message ?? "Payment verification failed.",
-      { code: "PAYMENT_FAILED" },
+      { code: "INTERNAL" },
     );
   }
 
