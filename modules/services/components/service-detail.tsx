@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ArrowRight,
+  BookOpen,
   Clock,
   ExternalLink,
   Fingerprint,
@@ -51,6 +52,13 @@ export function ServiceDetail({
           {workflowAvailable ? (
             <StartApplicationButton serviceId={service.id} />
           ) : null}
+          {/* Phase 6B: Companion button */}
+          <Button variant="outline" asChild>
+            <Link href={`/services/${service.slug}/companion`}>
+              <BookOpen aria-hidden="true" />
+              Companion
+            </Link>
+          </Button>
           <SaveServiceButton serviceId={service.id} saved={saved} />
           {/* Phase 6A: Agency link button (replaces plain "Go to official site") */}
           {service.mode === "EXTERNAL" && (service.agencyUrl || service.officialUrl) ? (
