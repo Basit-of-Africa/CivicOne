@@ -9,10 +9,8 @@ import {
   Landmark,
   RefreshCw,
   ShieldCheck,
-  ShieldCheckIcon,
   AlertTriangle,
   QrCode,
-  Copy,
 } from "lucide-react";
 import QRCodeLib from "qrcode";
 import { PageHeader } from "@/components/ui/page-header";

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Bell, LogOut, Menu, Settings, UserRound } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
 import { Avatar } from "@/components/ui/avatar";
-import { cn } from "@/lib/utils";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
