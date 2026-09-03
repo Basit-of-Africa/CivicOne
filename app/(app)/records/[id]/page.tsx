@@ -9,8 +9,12 @@ import {
   Landmark,
   RefreshCw,
   ShieldCheck,
+  ShieldCheckIcon,
   AlertTriangle,
+  QrCode,
+  Copy,
 } from "lucide-react";
+import QRCodeLib from "qrcode";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +22,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { getRecordById } from "@/modules/records/service";
 import { signDocumentUrl } from "@/modules/documents/service";
+import { getVerificationUrl } from "@/modules/records/qr-verification";
 import { APPLICATION_STATUS_LABELS } from "@/modules/applications/status";
 import { RECORD_STATUS_LABELS, RECORD_VERIFICATION_LABELS, RECORD_SOURCE_LABELS } from "@/modules/records/labels";
 
