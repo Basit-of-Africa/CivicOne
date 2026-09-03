@@ -34,40 +34,40 @@ const FEATURES: Array<{
     icon: Landmark,
     title: "Discover public services",
     description:
-      "Search the live catalogue of public and administrative services. See what's needed and what it costs — before you start.",
+      "Search 22+ public services across 13 categories. See requirements, fees, steps and office locations — before you start.",
   },
   {
     icon: FileCheck2,
-    title: "Initiate and track applications",
+    title: "Guided applications",
     description:
-      "Start applications and follow their progress in one place, without endless phone calls or office visits.",
+      "Follow step-by-step guides with checklists, tips, and what-to-bring details. No more guessing what you need.",
   },
   {
     icon: FolderOpen,
     title: "Keep records organised",
     description:
-      "A personal home for your administrative records and documents — when the document wallet ships.",
+      "Store certificates, track expiry dates, and manage your documents from one secure wallet.",
   },
 ];
 
 const STEPS = [
   {
     step: "01",
-    title: "Create your CivicOne account",
+    title: "Find what you need",
     description:
-      "Sign up with your email or phone number. Your account stays secure with strong session and password protections.",
+      "Search or browse 22+ public services by category. See requirements, fees, steps and office locations.",
   },
   {
     step: "02",
-    title: "Find what you need",
+    title: "Follow the guide",
     description:
-      "Search or browse public services by category. See requirements, fees and next steps before you commit.",
+      "Get personalised checklists, step-by-step guides with tips, and know exactly what to bring to the office.",
   },
   {
     step: "03",
     title: "Manage everything",
     description:
-      "Track applications, keep documents organised and handle records from one calm dashboard.",
+      "Track applications, store documents, get expiry reminders and keep your records organised from one dashboard.",
   },
 ];
 
@@ -107,18 +107,18 @@ export default function HomePage() {
           <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
             <Badge variant="secondary" className="mb-5 gap-1.5">
               <Sparkles className="size-3.5" aria-hidden="true" />
-              Independent technology platform — not a government agency
+              Nigeria&apos;s civic operating system — not a government agency
             </Badge>
 
             <h1 className="text-balance text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-              Your Nigerian identity, public services and records in{" "}
-              <span className="text-secondary">one place</span>.
+              Your guide to Nigerian{" "}
+              <span className="text-secondary">government services</span>.
             </h1>
 
             <p className="mt-5 max-w-2xl text-balance text-lg text-muted-foreground">
-              Verify your identity, access public services, manage applications
-              and keep your administrative records organised from one secure
-              account.
+              Discover services, follow step-by-step guides, manage applications
+              and keep your documents organised — all from one place. No more
+              guessing what you need.
             </p>
 
             <div className="mt-8 w-full">
@@ -183,11 +183,10 @@ export default function HomePage() {
             How it works
           </Badge>
           <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            A calm home for your public life
+            A calm guide for your public life
           </h2>
           <p className="mt-3 text-muted-foreground">
-            Three steps stand between you and a more organised relationship
-            with public services.
+            Three steps to a more organised relationship with government services.
           </p>
         </div>
         <ol className="mt-12 grid gap-6 md:grid-cols-3">
@@ -310,9 +309,8 @@ export default function HomePage() {
               Get organised, in your own time
             </h2>
             <p className="mt-3 text-primary-foreground/80">
-              Create your account today. Identity verification, the service
-              catalogue and saved services are live now — and more is on the
-              way.
+              Create your free account today. Browse services, follow guides,
+              and manage your documents — all in one place.
             </p>
             <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Button size="lg" variant="accent" asChild>

@@ -5,10 +5,10 @@
 
 export const APP_NAME = "CivicOne Nigeria";
 export const APP_TAGLINE =
-  "Your Nigerian identity, public services and records in one place.";
+  "Nigeria's civic operating system — your guide to government services.";
 
 export const APP_DESCRIPTION =
-  "CivicOne is an independent technology platform that helps Nigerians discover, initiate, manage and organise public and administrative services.";
+  "CivicOne is an independent technology platform that helps Nigerians discover, initiate, manage and organise public and administrative services. We provide step-by-step guides, checklists, and document management to make government services accessible.";
 
 export const TRUST_DISCLAIMER =
   "CivicOne is an independent technology platform. It is not a government agency.";
