@@ -13,10 +13,12 @@ const SESSION_COOKIE = process.env.SESSION_COOKIE_NAME ?? "civone_session";
 
 const AUTH_PREFIXES = ["/auth"];
 const PUBLIC_PREFIXES = ["/about", "/terms"];
+const API_PREFIXES = ["/api/"];
 
 function isPublicPath(pathname: string): boolean {
   if (pathname === "/") return true;
   if (AUTH_PREFIXES.some((prefix) => pathname.startsWith(prefix))) return true;
+  if (API_PREFIXES.some((prefix) => pathname.startsWith(prefix))) return true;
   return PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
