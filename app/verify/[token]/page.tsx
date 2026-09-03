@@ -36,7 +36,6 @@ async function verifyCertificate(token: string): Promise<VerificationResult> {
     include: {
       provider: { select: { name: true } },
       application: { select: { reference: true } },
-      identityProfile: { select: { legalName: true } },
     },
   });
 
@@ -54,6 +53,12 @@ async function verifyCertificate(token: string): Promise<VerificationResult> {
     return { valid: false, error: "Certificate document mismatch. This may be a forged document." };
   }
 
+  // Look up the holder's name from the identity profile
+  const profile = await db.identityProfile.findUnique({
+    where: { userId: record.userId },
+    select: { legalName: true },
+  });
+
   return {
     valid: true,
     record: {
@@ -64,7 +69,7 @@ async function verifyCertificate(token: string): Promise<VerificationResult> {
       issueDate: record.issueDate,
       expiryDate: record.expiryDate,
       providerName: record.provider.name,
-      holderName: record.identityProfile?.legalName ?? "—",
+      holderName: profile?.legalName ?? "—",
       applicationReference: record.application?.reference ?? null,
     },
   };
