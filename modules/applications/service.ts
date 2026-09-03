@@ -922,9 +922,9 @@ export async function getApplicationAnalytics(): Promise<ApplicationAnalyticsVie
       select: {
         id: true,
         reference: true,
-        serviceName: true,
         status: true,
         updatedAt: true,
+        service: { select: { name: true } },
       },
       orderBy: { updatedAt: "desc" },
       take: 5,
@@ -940,7 +940,7 @@ export async function getApplicationAnalytics(): Promise<ApplicationAnalyticsVie
     recentActivity: recent.map((r) => ({
       id: r.id,
       reference: r.reference,
-      serviceName: r.serviceName,
+      serviceName: r.service.name,
       status: r.status,
       updatedAt: r.updatedAt,
     })),

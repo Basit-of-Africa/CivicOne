@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { getApplicationAnalytics } from "@/modules/applications/service";
 import { ApplicationStatusBadge } from "@/modules/applications/components/application-status-badge";
+import type { ApplicationStatus } from "@prisma/client";
 
 export const metadata: Metadata = {
   title: "Application Analytics",
@@ -130,7 +131,7 @@ export default async function ApplicationAnalyticsPage() {
                     <span className="text-xs text-muted-foreground">
                       {item.updatedAt.toLocaleDateString()}
                     </span>
-                    <ApplicationStatusBadge status={item.status} />
+                    <ApplicationStatusBadge status={item.status as ApplicationStatus} />
                   </div>
                 </Link>
               ))}
