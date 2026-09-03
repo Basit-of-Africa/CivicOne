@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 import { Button } from "@/components/ui/button";
-import { getServiceBySlug, getSavedServiceIds } from "@/modules/services/service";
+import { getServiceBySlug, getSavedServiceIds, getOfficeLocationsByAgency } from "@/modules/services/service";
 import { hasActiveWorkflow } from "@/modules/applications/workflow";
 import { ServiceDetail } from "@/modules/services/components/service-detail";
 
@@ -24,6 +24,9 @@ export default async function ServicePage({
   const savedIds = await getSavedServiceIds();
   const workflowAvailable = await hasActiveWorkflow(service.id);
 
+  // Phase 6A: Fetch office locations for this service's provider
+  const offices = await getOfficeLocationsByAgency(service.providerAbbreviation ?? service.providerName);
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -41,7 +44,12 @@ export default async function ServicePage({
           </Button>
         }
       />
-      <ServiceDetail service={service} saved={savedIds.has(service.id)} workflowAvailable={workflowAvailable} />
+      <ServiceDetail
+        service={service}
+        saved={savedIds.has(service.id)}
+        workflowAvailable={workflowAvailable}
+        offices={offices}
+      />
     </div>
   );
 }
