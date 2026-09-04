@@ -94,6 +94,7 @@ export interface SearchFilters {
   query?: string;
   category?: string;
   jurisdiction?: string;
+  provider?: string;
   mode?: ServiceMode;
 }
 
@@ -107,6 +108,9 @@ export async function searchServices(
   }
   if (filters.jurisdiction) {
     where.jurisdiction = { code: filters.jurisdiction };
+  }
+  if (filters.provider) {
+    where.provider = { slug: filters.provider };
   }
   if (filters.mode) {
     where.mode = filters.mode;
@@ -205,6 +209,48 @@ export async function getJurisdictionOptions() {
       _count: { select: { services: { where: { isActive: true } } } },
     },
   });
+}
+
+export interface MinistryDirectoryView {
+  slug: string;
+  name: string;
+  abbreviation: string | null;
+  description: string | null;
+  officialUrl: string | null;
+  serviceCount: number;
+}
+
+export async function getMinistryDirectory(query?: string): Promise<MinistryDirectoryView[]> {
+  const trimmedQuery = query?.trim();
+  const rows = await db.serviceProvider.findMany({
+    where: trimmedQuery
+      ? {
+          OR: [
+            { name: { contains: trimmedQuery, mode: "insensitive" } },
+            { abbreviation: { contains: trimmedQuery, mode: "insensitive" } },
+            { description: { contains: trimmedQuery, mode: "insensitive" } },
+          ],
+        }
+      : undefined,
+    orderBy: { name: "asc" },
+    select: {
+      slug: true,
+      name: true,
+      abbreviation: true,
+      description: true,
+      officialUrl: true,
+      _count: { select: { services: { where: { isActive: true } } } },
+    },
+  });
+
+  return rows.map((row) => ({
+    slug: row.slug,
+    name: row.name,
+    abbreviation: row.abbreviation,
+    description: row.description,
+    officialUrl: row.officialUrl,
+    serviceCount: row._count.services,
+  }));
 }
 
 export async function getServiceBySlug(

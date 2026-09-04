@@ -22,6 +22,7 @@ interface SearchParams {
   q?: string;
   category?: string;
   jurisdiction?: string;
+  provider?: string;
   mode?: string;
 }
 
@@ -39,6 +40,7 @@ export default async function FindServicePage({
       query: params.q,
       category: params.category === "all" ? undefined : params.category,
       jurisdiction: params.jurisdiction === "all" ? undefined : params.jurisdiction,
+      provider: params.provider,
       mode: params.mode === "all" ? undefined : (params.mode as "GUIDANCE" | "EXTERNAL" | "INTEGRATED" | undefined),
     }),
   ]);

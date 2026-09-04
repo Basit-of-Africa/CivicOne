@@ -38,7 +38,7 @@ export function ServiceSearchControls({
 
   function update(next: Record<string, string>) {
     const params = new URLSearchParams(searchParams.toString());
-    const keys = ["q", "category", "jurisdiction", "mode"] as const;
+    const keys = ["q", "category", "jurisdiction", "provider", "mode"] as const;
     for (const key of keys) {
       const value = next[key];
       if (value) params.set(key, value);
