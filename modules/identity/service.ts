@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import type { IdentityVerificationStatus } from "@prisma/client";
 import { db } from "@/server/db";
 import { AppError, toFieldErrors, validationError } from "@/server/errors";
@@ -64,7 +65,7 @@ async function findProvider() {
   return { record, adapter };
 }
 
-export async function getIdentityStatus(): Promise<IdentityStatusView> {
+export const getIdentityStatus = cache(async function getIdentityStatus(): Promise<IdentityStatusView> {
   const user = await requireUser();
   const profile = await db.identityProfile.findUnique({ where: { userId: user.id } });
   const credential = await db.identityCredential.findUnique({
@@ -77,7 +78,7 @@ export async function getIdentityStatus(): Promise<IdentityStatusView> {
     maskedNin: credential?.maskedValue ?? null,
     legalName: profile?.legalName ?? null,
   };
-}
+});
 
 export async function getIdentityView(): Promise<IdentityView> {
   const user = await requireUser();

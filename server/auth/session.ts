@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { cookies } from "next/headers";
 import type { RoleName, UserStatus } from "@prisma/client";
 import { db } from "@/server/db";
@@ -114,7 +115,7 @@ export async function destroySession(): Promise<void> {
 /**
  * Resolve the current session user from the request cookie, or null.
  */
-export async function getSessionUser(): Promise<SessionUser | null> {
+export const getSessionUser = cache(async function getSessionUser(): Promise<SessionUser | null> {
   const store = await cookies();
   const token = store.get(env.SESSION_COOKIE_NAME)?.value;
   if (!token) return null;
@@ -152,7 +153,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   }
 
   return toSessionUser(session.user);
-}
+});
 
 /**
  * Resolve the current session user or throw UNAUTHENTICATED.
