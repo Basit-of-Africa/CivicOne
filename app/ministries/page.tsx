@@ -16,8 +16,10 @@ export default async function MinistriesPage({
   const query = (await searchParams).q ?? "";
   const result = await Promise.allSettled([getMinistryDirectory(query)]);
   const first = result[0];
-  const dataUnavailable = first.status === "rejected";
-  const ministries: MinistryDirectoryView[] = first.status === "fulfilled"
+  const useFallbackDirectory = first.status === "rejected"
+    || (!query.trim() && first.status === "fulfilled" && first.value.length === 0);
+  const dataUnavailable = useFallbackDirectory;
+  const ministries: MinistryDirectoryView[] = !useFallbackDirectory && first.status === "fulfilled"
     ? first.value
     : SERVICE_PROVIDERS_SEED.map((provider) => ({
         slug: provider.slug,
