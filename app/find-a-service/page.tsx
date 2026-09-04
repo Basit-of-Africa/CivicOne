@@ -11,6 +11,8 @@ import {
   ServiceResultsEmpty,
 } from "@/modules/services/components/service-search-explorer";
 import { StateDirectory } from "@/modules/services/components/state-directory";
+import type { StateOption } from "@/modules/services/components/state-directory";
+import { JURISDICTIONS } from "@/prisma/service-catalogue-data";
 
 export const metadata: Metadata = {
   title: "Find a Service",
@@ -30,7 +32,7 @@ export default async function FindServicePage({
 }) {
   const params = await searchParams;
 
-  const [categories, jurisdictions, outcome] = await Promise.all([
+  const [categoriesResult, jurisdictionsResult, outcomeResult] = await Promise.allSettled([
     getServiceCategories(),
     getJurisdictionOptions(),
     searchServicesWithIntent({
@@ -40,6 +42,22 @@ export default async function FindServicePage({
       mode: params.mode === "all" ? undefined : (params.mode as "GUIDANCE" | "EXTERNAL" | "INTEGRATED" | undefined),
     }),
   ]);
+
+  const dataUnavailable = [categoriesResult, jurisdictionsResult, outcomeResult].some(
+    (result) => result.status === "rejected",
+  );
+  const categories = categoriesResult.status === "fulfilled" ? categoriesResult.value : [];
+  const jurisdictions: StateOption[] = jurisdictionsResult.status === "fulfilled"
+    ? jurisdictionsResult.value
+    : JURISDICTIONS.filter((j) => j.level === "FEDERAL" || j.level === "STATE").map((j) => ({
+        code: j.code,
+        name: j.name,
+        level: j.level,
+        _count: { services: 0 },
+      }));
+  const outcome = outcomeResult.status === "fulfilled"
+    ? outcomeResult.value
+    : { results: [], related: [], intentMatched: false };
 
   return (
     <div className="min-h-svh bg-background">
@@ -56,7 +74,13 @@ export default async function FindServicePage({
           modes={["GUIDANCE", "EXTERNAL", "INTEGRATED"].map((m) => ({ slug: m, name: MODE_LABELS[m] ?? m }))}
         />
 
-        <StateDirectory states={jurisdictions} />
+        {dataUnavailable ? (
+          <div role="status" className="border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-foreground">
+            The service catalogue is temporarily unavailable. You can still browse all 36 states and the Federal Capital Territory while we reconnect.
+          </div>
+        ) : null}
+
+        <StateDirectory states={jurisdictions} dataUnavailable={dataUnavailable} />
 
         {outcome.results.length === 0 ? (
           <ServiceResultsEmpty />

@@ -3,7 +3,7 @@ import { ArrowRight, Building2, MapPinned } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 
-interface StateOption {
+export interface StateOption {
   code: string;
   name: string;
   level: string;
@@ -19,7 +19,7 @@ const REGIONS = [
   { name: "South West", states: ["EKITI", "LAGOS", "OGUN", "ONDO", "OSUN", "OYO"] },
 ] as const;
 
-function StateLink({ state }: { state: StateOption }) {
+function StateLink({ state, dataUnavailable }: { state: StateOption; dataUnavailable: boolean }) {
   const serviceCount = state._count.services;
 
   return (
@@ -30,7 +30,11 @@ function StateLink({ state }: { state: StateOption }) {
       <span className="min-w-0">
         <span className="block truncate text-sm font-semibold text-foreground">{state.name}</span>
         <span className="mt-1 block text-xs text-muted-foreground">
-          {serviceCount === 0 ? "Services coming soon" : `${serviceCount} service${serviceCount === 1 ? "" : "s"}`}
+          {dataUnavailable
+            ? "Availability being refreshed"
+            : serviceCount === 0
+              ? "Services coming soon"
+              : `${serviceCount} service${serviceCount === 1 ? "" : "s"}`}
         </span>
       </span>
       <ArrowRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary" aria-hidden="true" />
@@ -38,7 +42,13 @@ function StateLink({ state }: { state: StateOption }) {
   );
 }
 
-export function StateDirectory({ states }: { states: StateOption[] }) {
+export function StateDirectory({
+  states,
+  dataUnavailable = false,
+}: {
+  states: StateOption[];
+  dataUnavailable?: boolean;
+}) {
   const byCode = new Map(states.map((state) => [state.code, state]));
   const federal = byCode.get("FEDERAL");
   const stateCount = states.filter((state) => state.level === "STATE" && state.code !== "FCT").length;
@@ -58,7 +68,11 @@ export function StateDirectory({ states }: { states: StateOption[] }) {
             </h2>
             <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
               Browse federal services and state-specific public services across Nigeria.
-              {stateCount > 0 ? ` ${coveredCount} of ${stateCount} states currently have published services.` : ""}
+              {dataUnavailable
+                ? " Service availability is being refreshed from the national catalogue."
+                : stateCount > 0
+                  ? ` ${coveredCount} of ${stateCount} states currently have published services.`
+                  : ""}
             </p>
           </div>
         </div>
@@ -84,7 +98,7 @@ export function StateDirectory({ states }: { states: StateOption[] }) {
               </div>
               {region.states.map((code) => {
                 const state = byCode.get(code);
-                return state ? <StateLink key={state.code} state={state} /> : null;
+                return state ? <StateLink key={state.code} state={state} dataUnavailable={dataUnavailable} /> : null;
               })}
             </CardContent>
           </Card>
