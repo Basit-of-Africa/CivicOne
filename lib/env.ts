@@ -3,6 +3,9 @@ import { z } from "zod";
 
 const envSchema = z.object({
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
+  NG_DATA_API_URL: z.string().url().default("https://ngdata.udeh.ng"),
+  NG_DATA_API_KEY: z.string().default(""),
+  NG_DATA_CACHE_TTL_SECONDS: z.coerce.number().int().positive().default(86400),
   APP_URL: z.string().default("http://localhost:3000"),
   APP_NAME: z.string().default("CivicOne Nigeria"),
   EMAIL_FROM: z.string().default("no-reply@civicone.ng"),
