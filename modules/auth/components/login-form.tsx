@@ -18,7 +18,7 @@ function safeRedirect(param: string | null): string {
   return param;
 }
 
-export function LoginForm() {
+export function LoginForm({ showSignup = true }: { showSignup?: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = safeRedirect(searchParams.get("next"));
@@ -120,7 +120,7 @@ export function LoginForm() {
         </Link>
       </div>
 
-      <Button type="submit" className="w-full" size="lg" disabled={submitting}>
+      <Button type="submit" className="h-12 w-full rounded-full bg-secondary text-base hover:bg-secondary/90" size="lg" disabled={submitting}>
         {submitting ? (
           <>
             <Loader2 className="animate-spin" aria-hidden="true" />
@@ -131,12 +131,14 @@ export function LoginForm() {
         )}
       </Button>
 
-      <p className="text-center text-sm text-muted-foreground">
-        New to CivicOne?{" "}
-        <Link href="/auth/register" className="font-medium text-primary underline-offset-4 hover:underline">
-          Create an account
-        </Link>
-      </p>
+      {showSignup ? (
+        <p className="text-center text-sm text-muted-foreground">
+          New to CivicOne?{" "}
+          <Link href="/auth/register" className="font-medium text-primary underline-offset-4 hover:underline">
+            Create an account
+          </Link>
+        </p>
+      ) : null}
     </form>
   );
 }
