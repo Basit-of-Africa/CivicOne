@@ -94,7 +94,9 @@ async function fetchItems(path: string): Promise<z.infer<typeof itemSchema>[]> {
     if (!response.ok) throw new Error(`NG Data API returned ${response.status}`);
     const parsed = responseSchema.safeParse(await response.json());
     if (!parsed.success) throw new Error("NG Data API response did not match the expected shape");
-    return Array.isArray(parsed.data) ? parsed.data : parsed.data.data ?? parsed.data.results;
+    if (Array.isArray(parsed.data)) return parsed.data;
+    if ("data" in parsed.data) return parsed.data.data;
+    return parsed.data.results;
   } finally {
     clearTimeout(timeout);
   }
