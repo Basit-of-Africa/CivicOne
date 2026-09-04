@@ -129,6 +129,9 @@ npm run build
 | Variable | Default | Purpose |
 | --- | --- | --- |
 | `DATABASE_URL` | — | PostgreSQL connection string (required) |
+| `NG_DATA_API_URL` | `https://ngdata.udeh.ng` | Optional NG Data API base URL for cached administrative reference data |
+| `NG_DATA_API_KEY` | — | Optional bearer token; without it CivicOne uses local state/LGA data |
+| `NG_DATA_CACHE_TTL_SECONDS` | `86400` | Cache lifetime for NG Data API reference data |
 | `APP_URL` | `http://localhost:3000` | Base URL used in emails/links |
 | `APP_NAME` | `CivicOne Nigeria` | Brand name |
 | `EMAIL_FROM` | `no-reply@civicone.ng` | Sender address |

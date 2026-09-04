@@ -13,6 +13,7 @@ import {
 import { StateDirectory } from "@/modules/services/components/state-directory";
 import type { StateOption } from "@/modules/services/components/state-directory";
 import { JURISDICTIONS } from "@/prisma/service-catalogue-data";
+import { getAdministrativeStates } from "@/server/ng-data";
 
 export const metadata: Metadata = {
   title: "Find a Service",
@@ -49,14 +50,25 @@ export default async function FindServicePage({
     (result) => result.status === "rejected",
   );
   const categories = categoriesResult.status === "fulfilled" ? categoriesResult.value : [];
+  const fallbackStates = jurisdictionsResult.status === "fulfilled"
+    ? null
+    : await getAdministrativeStates();
   const jurisdictions: StateOption[] = jurisdictionsResult.status === "fulfilled"
     ? jurisdictionsResult.value
-    : JURISDICTIONS.filter((j) => j.level === "FEDERAL" || j.level === "STATE").map((j) => ({
-        code: j.code,
-        name: j.name,
-        level: j.level,
-        _count: { services: 0 },
-      }));
+    : [
+        ...JURISDICTIONS.filter((j) => j.level === "FEDERAL").map((j) => ({
+          code: j.code,
+          name: j.name,
+          level: j.level,
+          _count: { services: 0 },
+        })),
+        ...(fallbackStates ?? []).map((j) => ({
+          code: j.code ?? j.id,
+          name: j.name,
+          level: j.level,
+          _count: { services: 0 },
+        })),
+      ];
   const outcome = outcomeResult.status === "fulfilled"
     ? outcomeResult.value
     : { results: [], related: [], intentMatched: false };
