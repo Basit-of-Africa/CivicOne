@@ -24,7 +24,7 @@ function StateLink({ state, dataUnavailable }: { state: StateOption; dataUnavail
 
   return (
     <Link
-      href={`/find-a-service?jurisdiction=${state.code}`}
+      href={`/states/${state.code}`}
       className="group flex min-h-20 items-center justify-between gap-3 border-b border-border px-4 py-3 transition-colors last:border-b-0 hover:bg-muted/60"
     >
       <span className="min-w-0">

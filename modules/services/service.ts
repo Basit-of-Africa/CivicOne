@@ -253,6 +253,40 @@ export async function getMinistryDirectory(query?: string): Promise<MinistryDire
   }));
 }
 
+export async function getMinistryBySlug(slug: string) {
+  return db.serviceProvider.findUnique({
+    where: { slug },
+    select: {
+      slug: true,
+      name: true,
+      abbreviation: true,
+      description: true,
+      officialUrl: true,
+      services: {
+        where: { isActive: true },
+        select: cardSelect,
+        orderBy: { name: "asc" },
+      },
+    },
+  });
+}
+
+export async function getJurisdictionByCode(code: string) {
+  return db.jurisdiction.findUnique({
+    where: { code },
+    select: {
+      code: true,
+      name: true,
+      level: true,
+      services: {
+        where: { isActive: true },
+        select: cardSelect,
+        orderBy: { name: "asc" },
+      },
+    },
+  });
+}
+
 export async function getServiceBySlug(
   slug: string,
 ): Promise<ServiceDetailView | null> {

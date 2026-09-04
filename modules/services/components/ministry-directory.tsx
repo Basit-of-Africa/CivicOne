@@ -59,7 +59,7 @@ export function MinistryDirectory({
                 </div>
                 <div className="mt-auto flex flex-wrap items-center gap-3 pt-2">
                   <Link
-                    href={`/find-a-service?provider=${encodeURIComponent(ministry.slug)}`}
+                    href={`/ministries/${ministry.slug}`}
                     className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
                   >
                     {ministry.serviceCount} service{ministry.serviceCount === 1 ? "" : "s"}

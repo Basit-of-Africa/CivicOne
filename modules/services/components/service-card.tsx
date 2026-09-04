@@ -15,9 +15,11 @@ export const MODE_LABELS: Record<string, string> = {
 export function ServiceCard({
   service,
   saved,
+  showSave = true,
 }: {
   service: ServiceCardView;
   saved: boolean;
+  showSave?: boolean;
 }) {
   return (
     <Card className="transition-colors hover:border-foreground/25">
@@ -33,7 +35,7 @@ export function ServiceCard({
               </Link>
             </h3>
           </div>
-          <SaveServiceButton serviceId={service.id} saved={saved} />
+          {showSave ? <SaveServiceButton serviceId={service.id} saved={saved} /> : null}
         </div>
 
         <p className="text-sm text-muted-foreground">{service.summary}</p>
