@@ -198,6 +198,12 @@ export async function getJurisdictionOptions() {
   return db.jurisdiction.findMany({
     where: { level: { in: ["FEDERAL", "STATE"] } },
     orderBy: { name: "asc" },
+    select: {
+      code: true,
+      name: true,
+      level: true,
+      _count: { select: { services: { where: { isActive: true } } } },
+    },
   });
 }
 

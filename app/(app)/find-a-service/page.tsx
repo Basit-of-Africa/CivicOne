@@ -11,6 +11,7 @@ import {
   ServiceSearchControls,
   ServiceResultsEmpty,
 } from "@/modules/services/components/service-search-explorer";
+import { StateDirectory } from "@/modules/services/components/state-directory";
 
 export const metadata: Metadata = {
   title: "Find a Service",
@@ -55,6 +56,8 @@ export default async function FindServicePage({
         jurisdictions={jurisdictions.map((j) => ({ slug: j.code, name: j.name }))}
         modes={(["GUIDANCE", "EXTERNAL", "INTEGRATED"] as const).map((m) => ({ slug: m, name: MODE_LABELS[m] ?? m }))}
       />
+
+      <StateDirectory states={jurisdictions} />
 
       {outcome.results.length === 0 ? (
         <ServiceResultsEmpty />
