@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
  */
 
 const AUTH_PREFIXES = ["/auth"];
-const PUBLIC_PREFIXES = ["/about", "/terms", "/verify"];
+const PUBLIC_PREFIXES = ["/about", "/terms", "/verify", "/find-a-service"];
 const API_PREFIXES = ["/api/"];
 
 function isPublicPath(pathname: string): boolean {
