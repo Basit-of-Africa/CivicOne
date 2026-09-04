@@ -8,6 +8,7 @@ import {
   Fingerprint,
   FolderOpen,
   Landmark,
+  ExternalLink,
   ScrollText,
   ShieldCheck,
   Sparkles,
@@ -91,6 +92,17 @@ const TRUST_POINTS = [
       "CivicOne is a technology platform, not a government agency, and never claims to be one.",
   },
 ];
+
+const FEATURED_AGENCIES = [
+  { abbreviation: "CAC", name: "Corporate Affairs Commission", description: "Register a business or company.", slug: "cac", officialUrl: "https://www.cac.gov.ng" },
+  { abbreviation: "FIRS", name: "Federal Inland Revenue Service", description: "Manage federal tax services.", slug: "firs", officialUrl: "https://www.firs.gov.ng" },
+  { abbreviation: "NIMC", name: "National Identity Management Commission", description: "Access national identity services.", slug: "nimc", officialUrl: "https://nimc.gov.ng" },
+  { abbreviation: "NIS", name: "Nigeria Immigration Service", description: "Explore passports and immigration.", slug: "nis", officialUrl: "https://immigration.gov.ng" },
+  { abbreviation: "FRSC", name: "Federal Road Safety Corps", description: "Find driving and vehicle services.", slug: "frsc", officialUrl: "https://frsc.gov.ng" },
+  { abbreviation: "JAMB", name: "Joint Admissions and Matriculation Board", description: "Prepare for tertiary admissions.", slug: "jamb", officialUrl: "https://jamb.gov.ng" },
+  { abbreviation: "NPC", name: "National Population Commission", description: "Find civil registration services.", slug: "npc", officialUrl: "https://nationalpopulation.gov.ng" },
+  { abbreviation: "NAFDAC", name: "National Agency for Food and Drug Administration and Control", description: "Explore regulated product services.", slug: "nafdac", officialUrl: "https://nafdac.gov.ng" },
+] as const;
 
 export default function HomePage() {
   return (
@@ -251,6 +263,66 @@ export default function HomePage() {
                   aria-hidden="true"
                 />
               </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Agencies                                                             */}
+      {/* ------------------------------------------------------------------ */}
+      <section className="border-b border-border bg-card/60">
+        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16">
+          <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+            <div>
+              <Badge variant="outline" className="mb-3">
+                Ministries &amp; agencies
+              </Badge>
+              <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                Start with the organisation
+              </h2>
+              <p className="mt-2 max-w-xl text-muted-foreground">
+                Find the Nigerian agency behind the service you need, then move
+                from a clear explanation to the right official channel.
+              </p>
+            </div>
+            <Button variant="outline" asChild className="shrink-0">
+              <Link href="/ministries">
+                View all ministries and agencies
+                <ArrowRight aria-hidden="true" />
+              </Link>
+            </Button>
+          </div>
+
+          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {FEATURED_AGENCIES.map((agency) => (
+              <div key={agency.slug} className="flex min-h-44 flex-col rounded-lg border border-border bg-card p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-md bg-primary/5 text-sm font-bold text-primary">
+                    {agency.abbreviation}
+                  </div>
+                  <a
+                    href={agency.officialUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`Visit ${agency.name} official website`}
+                    className="text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <ExternalLink className="size-4" aria-hidden="true" />
+                  </a>
+                </div>
+                <h3 className="mt-4 text-sm font-semibold leading-snug text-foreground">
+                  {agency.name}
+                </h3>
+                <p className="mt-2 text-sm text-muted-foreground">{agency.description}</p>
+                <Link
+                  href={`/find-a-service?provider=${agency.slug}`}
+                  className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold text-primary hover:underline"
+                >
+                  View services
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </Link>
+              </div>
             ))}
           </div>
         </div>
