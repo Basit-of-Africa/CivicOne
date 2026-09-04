@@ -45,14 +45,26 @@ const envSchema = z.object({
   CRON_SECRET: z.string().default(""),
 });
 
-const parsed = envSchema.safeParse(process.env);
+/**
+ * Lazy env validation — parsed on first access, not at import time.
+ * This prevents build-time crashes when env vars are missing during
+ * Next.js static analysis / page data collection.
+ */
+let _env: z.infer<typeof envSchema> | null = null;
 
-if (!parsed.success) {
-  console.error(
-    "❌ Invalid environment configuration:",
-    parsed.error.flatten().fieldErrors,
-  );
-  throw new Error("Invalid environment configuration");
-}
-
-export const env = parsed.data;
+export const env: z.infer<typeof envSchema> = new Proxy({} as z.infer<typeof envSchema>, {
+  get(_target, prop) {
+    if (!_env) {
+      const parsed = envSchema.safeParse(process.env);
+      if (!parsed.success) {
+        console.error(
+          "❌ Invalid environment configuration:",
+          parsed.error.flatten().fieldErrors,
+        );
+        throw new Error("Invalid environment configuration");
+      }
+      _env = parsed.data;
+    }
+    return _env[prop as keyof z.infer<typeof envSchema>];
+  },
+});
