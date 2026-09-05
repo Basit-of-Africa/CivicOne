@@ -74,4 +74,29 @@ describe("CAC VAS client", () => {
     });
     expect(fetchImpl).not.toHaveBeenCalled();
   });
+
+  it("searches companies by name and returns normalized results", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          statusCode: 200,
+          success: true,
+          data: [
+            { rc_number: "RC111111", entity_name: "CivicOne Tech Ltd", entity_type: "COMPANY", entity_status: "ACTIVE" },
+            { rc_number: "RC222222", entity_name: "CivicOne Services", entity_type: "BUSINESS_NAME", entity_status: "ACTIVE" },
+          ],
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      ),
+    );
+    const client = createCacVasClient({ fetchImpl, enabled: true, apiKey: "test-cac-key", baseUrl: "https://staging.example.test", timeoutMs: 1000 });
+
+    const results = await client.searchCompaniesByName("CivicOne");
+    expect(results).toHaveLength(2);
+    expect(results[0]).toMatchObject({ rcNumber: "RC111111", entityName: "CivicOne Tech Ltd" });
+    expect(fetchImpl).toHaveBeenCalledWith(
+      "https://staging.example.test/api/vas/validation/open-search/company",
+      expect.objectContaining({ body: JSON.stringify({ company_name: "CivicOne" }) }),
+    );
+  });
 });
