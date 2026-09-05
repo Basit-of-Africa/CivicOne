@@ -251,20 +251,25 @@ export function StepPanel({
 
   if (step.type === "COMPLETION") {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Application submitted</CardTitle>
-          <CardDescription>Your reference is tracked below.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <p className="text-sm text-muted-foreground">
-            Reference: <span className="font-semibold text-foreground">{application.reference}</span>
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Provider reference: <span className="font-semibold text-foreground">{application.providerRef ?? "—"}</span>
-          </p>
-        </CardContent>
-      </Card>
+      <div className="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Application submitted</CardTitle>
+            <CardDescription>Your reference is tracked below.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Reference: <span className="font-semibold text-foreground">{application.reference}</span>
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Provider reference: <span className="font-semibold text-foreground">{application.providerRef ?? "—"}</span>
+            </p>
+          </CardContent>
+        </Card>
+        {application.serviceSlug === "business-registration" && application.providerRef ? (
+          <CacTinLookup rcNumber={application.providerRef.replace(/^CAC-/, "")} entityType="COMPANY" />
+        ) : null}
+      </div>
     );
   }
 

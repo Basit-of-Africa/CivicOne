@@ -27,6 +27,7 @@ import { saveAnswersAction } from "@/modules/applications/actions";
 import { DocumentUpload, type DocumentItem } from "./document-upload";
 import type { WalletDocumentView } from "@/modules/documents/service";
 import { CacCompanyValidation } from "./cac-company-validation";
+import { CacNameCheck } from "./cac-name-check";
 import type { CacCompany } from "@/server/cac-vas";
 
 export function DynamicForm({
@@ -90,6 +91,10 @@ export function DynamicForm({
         <CacCompanyValidation
           onValidated={applyCacCompany}
         />
+      ) : null}
+
+      {definition.key === "company-details" && currentCompanyName.length >= 2 ? (
+        <CacNameCheck companyName={currentCompanyName} />
       ) : null}
       {definition.fields.map((field) => {
         const isVerified = Boolean(field.identityField && prefill[field.key]);
