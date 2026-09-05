@@ -26,7 +26,7 @@ describe("CAC VAS client", () => {
         { status: 200, headers: { "Content-Type": "application/json" } },
       ),
     );
-    const client = createCacVasClient({ fetchImpl });
+    const client = createCacVasClient({ fetchImpl, enabled: true, apiKey: "test-cac-key", baseUrl: "https://staging.example.test", timeoutMs: 1000 });
 
     await expect(client.getCompanyByRc("RC123456", "COMPANY")).resolves.toMatchObject({
       rcNumber: "RC123456",
@@ -57,7 +57,7 @@ describe("CAC VAS client", () => {
         { status: 400, headers: { "Content-Type": "application/json" } },
       ),
     );
-    const client = createCacVasClient({ fetchImpl });
+    const client = createCacVasClient({ fetchImpl, enabled: true, apiKey: "test-cac-key", baseUrl: "https://staging.example.test", timeoutMs: 1000 });
 
     const error = await client.getCompanyByRc("RC404", "COMPANY").catch((value) => value);
     expect(error).toBeInstanceOf(AppError);
@@ -66,9 +66,8 @@ describe("CAC VAS client", () => {
   });
 
   it("refuses calls when the integration is disabled", async () => {
-    process.env.CAC_VAS_ENABLED = "false";
     const fetchImpl = vi.fn<typeof fetch>();
-    const client = createCacVasClient({ fetchImpl });
+    const client = createCacVasClient({ fetchImpl, enabled: false, apiKey: "" });
 
     await expect(client.getCompanyTin("RC123456", "COMPANY")).rejects.toMatchObject({
       code: "CONFLICT",

@@ -24,6 +24,10 @@ export interface CacCompany {
 
 export interface CacVasClientOptions {
   fetchImpl?: typeof fetch;
+  enabled?: boolean;
+  apiKey?: string;
+  baseUrl?: string;
+  timeoutMs?: number;
 }
 
 const envelopeSchema = z.object({
@@ -89,20 +93,24 @@ function providerError(status: number, body: z.infer<typeof envelopeSchema>): Ap
 
 export function createCacVasClient(options: CacVasClientOptions = {}) {
   const fetchImpl = options.fetchImpl ?? fetch;
+  const enabled = options.enabled ?? env.CAC_VAS_ENABLED;
+  const apiKey = options.apiKey ?? env.CAC_VAS_API_KEY;
+  const baseUrl = options.baseUrl ?? env.CAC_VAS_BASE_URL;
+  const timeoutMs = options.timeoutMs ?? env.CAC_VAS_TIMEOUT_MS;
 
   async function request(path: string, body: Record<string, string>): Promise<unknown> {
-    if (!env.CAC_VAS_ENABLED || !env.CAC_VAS_API_KEY) {
+    if (!enabled || !apiKey) {
       throw new AppError("CAC VAS integration is not enabled.", { code: "CONFLICT" });
     }
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), env.CAC_VAS_TIMEOUT_MS);
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const response = await fetchImpl(`${env.CAC_VAS_BASE_URL.replace(/\/$/, "")}${path}`, {
+      const response = await fetchImpl(`${baseUrl.replace(/\/$/, "")}${path}`, {
         method: "POST",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
-          X_API_KEY: env.CAC_VAS_API_KEY,
+          X_API_KEY: apiKey,
         },
         body: JSON.stringify(body),
         signal: controller.signal,
