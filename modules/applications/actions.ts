@@ -1,6 +1,8 @@
 "use server";
 
 import { fail, toFieldErrors, validationError, withActionResult } from "@/server/errors";
+import { requireUser } from "@/server/auth/session";
+import { cacVas, type CacEntityType } from "@/server/cac-vas";
 import {
   attachDocument,
   cancelApplication,
@@ -38,6 +40,18 @@ export async function saveAnswersAction(input: {
   return withActionResult(() =>
     saveAnswers(parsed.data.applicationId, parsed.data.formKey, parsed.data.values),
   );
+}
+
+export async function validateCacCompanyAction(input: {
+  rcNumber: string;
+  entityType?: CacEntityType;
+}) {
+  const rcNumber = input.rcNumber.trim();
+  if (!/^RC?\s*\d{4,}$/i.test(rcNumber)) {
+    return fail(validationError({ rcNumber: "Enter a valid CAC RC number." }));
+  }
+  await requireUser();
+  return withActionResult(() => cacVas.getCompanyByRc(rcNumber.replace(/\s+/g, ""), input.entityType ?? "COMPANY"));
 }
 
 export async function confirmEligibilityAction(applicationId: string) {

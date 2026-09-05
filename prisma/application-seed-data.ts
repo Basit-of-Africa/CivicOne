@@ -26,6 +26,7 @@ export const FORM_DEFINITIONS_SEED: FormDefinition[] = [
     key: "company-details",
     name: "Company details",
     fields: [
+      { key: "existingRcNumber", label: "Existing CAC RC number", type: "text", required: false, placeholder: "e.g. RC123456", hint: "Optional: validate an already registered entity with CAC." },
       { key: "companyName", label: "Proposed company name", type: "text", required: true, maxLength: 160, hint: "This is the name that will be registered with the CAC." },
       { key: "companyType", label: "Company type", type: "select", required: true, options: [{ label: "Private Limited Company", value: "private-limited" }, { label: "Public Limited Company", value: "public-limited" }, { label: "Company Limited by Guarantee", value: "guarantee" }, { label: "Unlimited Company", value: "unlimited" }] },
       { key: "businessSector", label: "Business sector", type: "select", required: true, options: [{ label: "Technology", value: "technology" }, { label: "Agriculture", value: "agriculture" }, { label: "Retail & Trade", value: "retail" }, { label: "Finance", value: "finance" }, { label: "Manufacturing", value: "manufacturing" }, { label: "Services", value: "services" }, { label: "Other", value: "other" }] },

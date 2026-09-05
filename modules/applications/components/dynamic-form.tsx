@@ -26,6 +26,8 @@ import {
 import { saveAnswersAction } from "@/modules/applications/actions";
 import { DocumentUpload, type DocumentItem } from "./document-upload";
 import type { WalletDocumentView } from "@/modules/documents/service";
+import { CacCompanyValidation } from "./cac-company-validation";
+import type { CacCompany } from "@/server/cac-vas";
 
 export function DynamicForm({
   applicationId,
@@ -67,6 +69,11 @@ export function DynamicForm({
 
   const [error, setError] = React.useState<string | null>(null);
 
+  function applyCacCompany(company: CacCompany) {
+    if (company.entityName) setValue("companyName", company.entityName, { shouldValidate: true });
+    if (company.address) setValue("registeredAddress", company.address, { shouldValidate: true });
+  }
+
   async function onSubmit(data: Record<string, unknown>) {
     setError(null);
     const result = await saveAnswersAction({ applicationId, formKey: definition.key, values: data });
@@ -79,6 +86,12 @@ export function DynamicForm({
 
   return (
     <form onSubmit={handleSubmit((data) => void onSubmit(data as Record<string, unknown>))} className="space-y-5" noValidate>
+      {definition.key === "company-details" ? (
+        <CacCompanyValidation
+          initialValue={(values.existingRcNumber as string | undefined) ?? ""}
+          onValidated={applyCacCompany}
+        />
+      ) : null}
       {definition.fields.map((field) => {
         const isVerified = Boolean(field.identityField && prefill[field.key]);
         const registered = register(field.key);
