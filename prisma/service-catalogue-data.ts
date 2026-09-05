@@ -742,6 +742,7 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { name: "Annual return financial year", amount: 500, frequency: "per filing", note: "CAC VAS price; confirm current charges before payment." },
       { name: "Annual return acknowledgment letter", amount: 500, frequency: "per filing", note: "CAC VAS price; confirm current charges before payment." },
       { name: "Annual return filing years", amount: 200, frequency: "per year", note: "CAC VAS price; confirm current charges before payment." },
+    ],
     faqs: [
       { question: "What happens if I don't file annual returns?", answer: "Failure to file can lead to penalties and, in severe cases, striking the company off the register." },
     ],
