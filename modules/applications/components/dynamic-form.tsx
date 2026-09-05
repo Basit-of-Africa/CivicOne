@@ -88,7 +88,6 @@ export function DynamicForm({
     <form onSubmit={handleSubmit((data) => void onSubmit(data as Record<string, unknown>))} className="space-y-5" noValidate>
       {definition.key === "company-details" ? (
         <CacCompanyValidation
-          initialValue={(values.existingRcNumber as string | undefined) ?? ""}
           onValidated={applyCacCompany}
         />
       ) : null}
