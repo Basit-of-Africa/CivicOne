@@ -75,6 +75,8 @@ export function DynamicForm({
     if (company.address) setValue("registeredAddress", company.address, { shouldValidate: true });
   }
 
+  const currentCompanyName = (watch("companyName") as string) ?? "";
+
   async function onSubmit(data: Record<string, unknown>) {
     setError(null);
     const result = await saveAnswersAction({ applicationId, formKey: definition.key, values: data });
