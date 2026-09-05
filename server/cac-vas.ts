@@ -22,6 +22,14 @@ export interface CacCompany {
   source: "CAC_VAS";
 }
 
+export interface CacSearchResult {
+  rcNumber: string | null;
+  entityName: string | null;
+  entityType: string | null;
+  registrationDate: string | null;
+  status: string | null;
+}
+
 export interface CacVasClientOptions {
   fetchImpl?: typeof fetch;
   enabled?: boolean;
@@ -57,6 +65,19 @@ const companySchema = z.object({
   lineOfBusiness: z.union([z.string(), z.array(z.string())]).nullable().optional(),
 }).passthrough();
 
+const searchItemSchema = z.object({
+  rc_number: z.string().nullable().optional(),
+  rcNumber: z.string().nullable().optional(),
+  entity_name: z.string().nullable().optional(),
+  entityName: z.string().nullable().optional(),
+  entity_type: z.string().nullable().optional(),
+  entityType: z.string().nullable().optional(),
+  registration_date: z.string().nullable().optional(),
+  registrationDate: z.string().nullable().optional(),
+  entity_status: z.string().nullable().optional(),
+  status: z.string().nullable().optional(),
+}).passthrough();
+
 function normalizeLineOfBusiness(value: string | string[] | null | undefined): string[] {
   if (!value) return [];
   return Array.isArray(value) ? value : [value];
@@ -81,6 +102,19 @@ function normalizeCompany(data: unknown): CacCompany {
     tin: company.tin ?? null,
     lineOfBusiness: normalizeLineOfBusiness(company.line_of_business ?? company.lineOfBusiness),
     source: "CAC_VAS",
+  };
+}
+
+function normalizeSearchItem(data: unknown): CacSearchResult {
+  const parsed = searchItemSchema.safeParse(data);
+  if (!parsed.success) throw new AppError("CAC returned an unexpected search response.", { code: "INTERNAL", cause: parsed.error });
+  const item = parsed.data;
+  return {
+    rcNumber: item.rc_number ?? item.rcNumber ?? null,
+    entityName: item.entity_name ?? item.entityName ?? null,
+    entityType: item.entity_type ?? item.entityType ?? null,
+    registrationDate: item.registration_date ?? item.registrationDate ?? null,
+    status: item.entity_status ?? item.status ?? null,
   };
 }
 
@@ -145,6 +179,13 @@ export function createCacVasClient(options: CacVasClientOptions = {}) {
       return request("/api/vas/validation/tin", { rc_number: rcNumber, entity_type: entityType }).then((data) => {
         const parsed = z.object({ tin: z.string().nullable().optional() }).safeParse(data);
         return parsed.success ? parsed.data.tin ?? null : null;
+      });
+    },
+
+    searchCompaniesByName(companyName: string): Promise<CacSearchResult[]> {
+      return request("/api/vas/validation/open-search/company", { company_name: companyName }).then((data) => {
+        if (!Array.isArray(data)) return [];
+        return data.map(normalizeSearchItem);
       });
     },
   };

@@ -54,6 +54,15 @@ export async function validateCacCompanyAction(input: {
   return withActionResult(() => cacVas.getCompanyByRc(rcNumber.replace(/\s+/g, ""), input.entityType ?? "COMPANY"));
 }
 
+export async function checkCacNameAction(companyName: string) {
+  const trimmed = companyName.trim();
+  if (trimmed.length < 2) {
+    return fail(validationError({ companyName: "Enter at least 2 characters to search." }));
+  }
+  await requireUser();
+  return withActionResult(() => cacVas.searchCompaniesByName(trimmed));
+}
+
 export async function confirmEligibilityAction(applicationId: string) {
   const parsed = applicationIdSchema.safeParse({ applicationId });
   if (!parsed.success) return fail(validationError(toFieldErrors(parsed.error)));
