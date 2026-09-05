@@ -73,6 +73,18 @@ Recommended first use cases:
 3. TIN lookup for an already-registered entity.
 4. Optional line-of-business and status display.
 
+## Supplied VAS price sheet mapping
+
+The supplied CAC VAS pricing sheet maps directly to the current catalogue as follows:
+
+- `Company Registration`: LLC REGISTER `NGN 7,300`, LLC NAME RESERVATION `NGN 1,200`, LLC STAMP DUTY `NGN 0`.
+- `Business Name Registration`: BUSINESS NAME `NGN 27,000`, optional PRIORITY_SERVICE `NGN 500`.
+- `CAC Annual Returns`: ANNUAL RETURN REGISTRATION `NGN 1,050`, ANNUAL RETURN FINANCIAL YEAR `NGN 500`, ANNUAL RETURN ACKNOWLEDGMENT LETTER `NGN 500`, and ANNUAL RETURN FILING YEARS `NGN 200` per year.
+
+These are stored as fee estimates with an instruction to confirm current CAC charges before payment. They are not treated as CivicOne payment amounts or proof that a VAS operation is available to the current API key.
+
+The following supplied products remain intentionally unmapped until their workflow, permissions, and API operation are confirmed: BN bulk registration/compliance, LLC affiliates/shares/PSC/assets, post-incorporation business-name services, premium validation, certificates/status reports, affiliate searches, VRC operations, and TIN generation.
+
 Do not initially automate CAC registration submission unless CAC confirms a separate submission contract. The documented collection is primarily a VAS validation/retrieval API.
 
 ## Security and compliance
