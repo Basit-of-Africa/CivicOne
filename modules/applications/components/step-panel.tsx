@@ -24,6 +24,7 @@ import {
   type FormDefinition,
   type VerifiedIdentity,
 } from "@/modules/applications/form-config";
+import { CacTinLookup } from "./cac-tin-lookup";
 
 export function StepPanel({
   application,
