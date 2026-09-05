@@ -132,6 +132,10 @@ npm run build
 | `NG_DATA_API_URL` | `https://ngdata.udeh.ng` | Optional NG Data API base URL for cached administrative reference data |
 | `NG_DATA_API_KEY` | — | Optional bearer token; without it CivicOne uses local state/LGA data |
 | `NG_DATA_CACHE_TTL_SECONDS` | `86400` | Cache lifetime for NG Data API reference data |
+| `CAC_VAS_ENABLED` | `false` | Enable the server-only CAC VAS read-only client |
+| `CAC_VAS_BASE_URL` | `https://vasapp.oasisproducts.ng` | CAC VAS staging or production base URL |
+| `CAC_VAS_API_KEY` | — | Server-only CAC VAS `X_API_KEY`; never expose to browser code |
+| `CAC_VAS_TIMEOUT_MS` | `8000` | CAC VAS request timeout |
 | `APP_URL` | `http://localhost:3000` | Base URL used in emails/links |
 | `APP_NAME` | `CivicOne Nigeria` | Brand name |
 | `EMAIL_FROM` | `no-reply@civicone.ng` | Sender address |
