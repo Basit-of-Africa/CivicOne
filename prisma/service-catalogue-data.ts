@@ -161,6 +161,7 @@ export interface RequirementSeed {
 
 export interface FeeSeed {
   name: string;
+  amount?: number;
   frequency?: string;
   note?: string;
 }
@@ -207,8 +208,9 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { title: "Proof of registered address", isDocument: true },
     ],
     fees: [
-      { name: "Company registration filing fee", frequency: "per application" },
-      { name: "Name reservation fee", frequency: "per name" },
+      { name: "LLC registration filing fee", amount: 7300, frequency: "per application", note: "CAC VAS price; confirm current charges before payment." },
+      { name: "LLC name reservation fee", amount: 1200, frequency: "per name", note: "CAC VAS price; confirm current charges before payment." },
+      { name: "LLC stamp duty", amount: 0, frequency: "per application", note: "Listed as ₦0.00 in the supplied CAC VAS price sheet." },
     ],
     faqs: [
       { question: "How long does company registration take?", answer: "CAC registrations are typically processed within a few working days once the application is complete and payment is made." },
@@ -240,7 +242,10 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { title: "Business address", isDocument: true },
       { title: "Identification of the proprietor or partners", description: UNVERIFIED_NOTE },
     ],
-    fees: [{ name: "Business name registration fee", frequency: "per application" }],
+    fees: [
+      { name: "Business name registration", amount: 27000, frequency: "per application", note: "CAC VAS price; confirm entity and current charges before payment." },
+      { name: "Priority service", amount: 500, frequency: "per application", note: "Optional CAC VAS sub-service." },
+    ],
     faqs: [
       { question: "Is a business name the same as a company?", answer: "No. A business name is for sole traders and partnerships; a company is a separate legal entity. Both are registered with CAC." },
     ],
@@ -732,7 +737,11 @@ export const DEMO_SERVICES_SEED: DemoServiceSeed[] = [
       { title: "Company registration details", isDocument: true },
       { title: "Up-to-date financial statement (where required)", isDocument: true },
     ],
-    fees: [{ name: "Annual returns filing fee", frequency: "annual" }],
+    fees: [
+      { name: "Annual return registration", amount: 1050, frequency: "per filing", note: "CAC VAS price; confirm current charges before payment." },
+      { name: "Annual return financial year", amount: 500, frequency: "per filing", note: "CAC VAS price; confirm current charges before payment." },
+      { name: "Annual return acknowledgment letter", amount: 500, frequency: "per filing", note: "CAC VAS price; confirm current charges before payment." },
+      { name: "Annual return filing years", amount: 200, frequency: "per year", note: "CAC VAS price; confirm current charges before payment." },
     faqs: [
       { question: "What happens if I don't file annual returns?", answer: "Failure to file can lead to penalties and, in severe cases, striking the company off the register." },
     ],

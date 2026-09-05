@@ -243,7 +243,7 @@ async function main() {
           id: generateId("sfee"),
           serviceId: service.id,
           name: f.name,
-          amount: null,
+          amount: f.amount ?? null,
           frequency: f.frequency ?? null,
           note: f.note ?? null,
           sortOrder: index,
